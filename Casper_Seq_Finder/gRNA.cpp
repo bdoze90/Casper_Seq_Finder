@@ -86,9 +86,15 @@ std::string gRNA::pamSequence(std::string fullseq) {
  * an A to the end.
  */
 
-std::string gRNA::decompressSeq() {
+std::string gRNA::decompressSeq(unsigned long cseq) {
     std::string uncompressed;
     //do the reverse binary transition from base-10 to base-4
+    while (cseq >= 4) {
+        int rem = cseq%4;
+        cseq = cseq/4;
+        uncompressed += convertBase4toChar(rem);
+    }
+    uncompressed += convertBase4toChar(cseq);
     return uncompressed;
 }
 
@@ -118,11 +124,18 @@ unsigned long gRNA::compressSeq(std::string s) {
  * the function.
  */
 
-std::pair<unsigned long, std::string> gRNA::getVectorPair(unsigned long seed) {
+std::pair<unsigned long, std::string> gRNA::getVectorPair(unsigned long seed, bool db) {
     //run base-10 to base-64 conversion on the location and the Sequence and then put them into loc and seq
-    std::string seq = baseConvert(seed, 64);
-    std::string seq2 = baseConvert(tailSeq, 64);
+    std::string seq;
+    std::string seq2;
     std::string totseq;
+    if (!db) {
+        seq = decompressSeq(seed);
+        seq2 = decompressSeq(tailSeq);
+    } else {
+        seq = baseConvert(seed, 64);
+        seq2 = baseConvert(tailSeq, 64);
+    }
     //Get absolute value of the location and add the sense signal:
     if (PAMlocation < 0) {
         PAMlocation *= -1;  //converts the location to absolute value for compression
@@ -162,6 +175,16 @@ int gRNA::convertCharBase4(char c) {
          default: return 0;
      }
  }
+
+/* Function: convertBase4toChar
+ * ---------------------------------------------------------------------------------------------------------
+ * Usage: Simple switch function, reverse of above.
+ */
+
+char gRNA::convertBase4toChar(int i) {
+    std::string bfour = "ATCG";
+    return bfour[i];
+}
 
 /* PUBLIC Function: baseConvert(unsigned long long base10 number, int base output)
  * ---------------------------------------------------------------------------------------------------------

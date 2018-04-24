@@ -28,28 +28,10 @@ string toCapitals(string &str); //takes the string to all capitals
 /* Main */
 
 //the line limit for the file and the capitals mixed
-
-int main(int argc, char *argv[]) {
-    /*begin temporary debugging
-    std::vector<std::string> temp = {"none", "spCas9","NGG","None","test","FALSE","/Users/brianmendoza/Desktop/Sequences/"};
-    std::string filel = "/Users/brianmendoza/Desktop/CRISPRs/testontest.txt";
-    string pamname = temp[1];
-    string pam = temp[2];
-    vector<string> Opams;
-    bool offexist = true;
-    string opam = string(temp[3]);
-    if (opam == "None") {
-        offexist = false;
-    }
-    Opams.push_back(opam);
-    string OrgCode = temp[4];
-    string returnPath = temp[6];
-    bool anti = false;
-    string a = string(temp[5]);
-    if (a == "TRUE") {
-        anti = true;
-    }
-    end temporary debugging */
+int main() {
+    int argc = 12;
+    std::vector<std::string> argv = {"none","spCas9","NGG","None","eco","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/eco.fna","8","12"};
+//int main(int argc, char *argv[]) {
     // argv contains in order: pamname, PAM, OPAM, OrgCode, anti, returnPath, *file locations.
      string pamname = argv[1];
      string pam = argv[2];
@@ -71,6 +53,8 @@ int main(int argc, char *argv[]) {
      if (a == "TRUE") {
      anti = true;
      }
+    int seed = std::stoi(string(argv[9]));
+    int tail = std::stoi(string(argv[10]));
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
@@ -111,17 +95,17 @@ int main(int argc, char *argv[]) {
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
-        Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file);
+        Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file,seed,tail);
         if (offexist) {
-            Genome.findPAMs(chromosomeSequence, true, j, Opams[0], false, anti, score_file);
+            Genome.findPAMs(chromosomeSequence, true, j, Opams[0], false, anti, score_file,seed,tail);
         }
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
-        Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file);
+        Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file,seed,tail);
         if (offexist) {
-            Genome.findPAMs(reverseSequence, false, j, Opams[0], false, anti, score_file);
+            Genome.findPAMs(reverseSequence, false, j, Opams[0], false, anti, score_file,seed,tail);
         }
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();

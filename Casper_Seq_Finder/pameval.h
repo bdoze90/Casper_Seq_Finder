@@ -10,59 +10,63 @@
 #define Casper_Seq_Finder_pameval_h
 
 #include <vector>
+#include <string>
 
 class pamEval {
 public:
-    std::string core;
-    int offset = 0;
-    std::vector<char> optid;
-    std::vector<int> options;
-    bool checkOptions(char n, char c) {
-        bool check = false;
+    std::string regexPAM(std::string p) {
+        std::string retpam;
+        // Iterate across the pam and generate regex characters for degenerates
+        for(int i=0;i<p.size();i++) {
+            if (p[i] == 'N') {
+                retpam += '.';
+            } else if (p[i] == 'A' || 'C' || 'T' || 'G') {
+                retpam += p[i];
+            } else {
+                retpam += degenerateRegex(p[i]);
+            }
+        }
+        std::cout << retpam << std::endl;
+        return retpam;
+    };
+private:
+    // Function for assigning a regex code for a degenerate nucleotide code
+    std::string degenerateRegex(char c) {
+        std::string reg_s;
         switch (c) {
             case 'W':
-                if (n == 'A' || n == 'T')
-                    check = true;
+                reg_s = "[AT]";
                 break;
             case 'S':
-                if (n == 'C' || n == 'G')
-                    check = true;
+                reg_s = "[CG]";
                 break;
             case 'M':
-                if (n == 'A' || n == 'C')
-                    check = true;
+                reg_s = "[AC]";
                 break;
             case 'K':
-                if (n == 'G' || n == 'T')
-                    check = true;
+                reg_s = "[GT]";
                 break;
             case 'R':
-                if (n == 'A' || n == 'G')
-                    check = true;
+                reg_s = "[AG]";
                 break;
             case 'Y':
-                if (n == 'C' || n == 'T')
-                    check = true;
+                reg_s = "[CT]";
                 break;
             case 'B':
-                if (n != 'A')
-                    check = true;
+                reg_s = "[TCG]";
                 break;
             case 'D':
-                if (n != 'C')
-                    check = true;
+                reg_s = "[ATG]";
                 break;
             case 'H':
-                if (n != 'G')
-                    check = true;
+                reg_s = "[ATC]";
                 break;
             case 'V':
-                if (n != 'T')
-                    check = true;
+                reg_s = "[AGC]";
                 break;
         }
-        return check;
-    }
+        return reg_s;
+    };
 };
 
 

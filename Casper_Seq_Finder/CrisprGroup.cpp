@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <regex>
 #include <assert.h>
 #include "CrisprGroup.h"
 #include "Scoring.h"
@@ -49,61 +50,55 @@ CrisprGroup::~CrisprGroup() {
  * makes a new instance of gRNA in which the sequence is placed into to fill the data of the object.
  */
 
-void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string pam, bool on, bool anti,std::string score_file) {  //NEED TO INCLUDE SEQUENCE LENGTH (20-24).
+void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file,int seed, int tail) {
     //Scoring algorithm initialization:
     Scoring scoring(score_file);
-    int pamsize = pam.length();
-    long i;
-    long index=0;
-    pamEval p = evaluate(pam, anti);
-    pam = p.core;
-    std::cout << pam << endl;
-    int offset = p.offset;
-    std::vector<int> options = p.options;
-    int t=0;
-    while (index < s.length()) {
-        i = s.find(pam,index);
-        for (int k=0; k<options.size(); k++) {
-            char c = s.at(i+options[k]);
-            if(p.checkOptions(c,p.optid[k]) == false) {
-                t++;
-            }
-        }
-        if (i == std::string::npos) { break;}
-        else if (t>0) {
-            t--;
-        }
-        else if (s.length()-10 > i && i > 35) {
+    int pamsize = p.length();
+    int tss = seed + tail;
+    // PAM sequence search initialization
+    pamEval pe;
+    std::regex pam (pe.regexPAM(p));
+    std::smatch m;
+    auto begin = std::sregex_iterator(s.begin(), s.end(), pam);
+    auto end = std::sregex_iterator();
+    //searching the sequence for the PAM with the iterator
+    for (std::sregex_iterator i = begin; i != end; i++) {
+        std::smatch match = *i;
+        std::string mpam = match.str();
+        long m_pos = match.position();
+        
+        if (s.length()-10 > m_pos && m_pos > 35) { //checking to make sure you are not too close to the edge of the sequence
             gRNA* sequence = new gRNA;
             std::string fullseq;
             unsigned long seed;
-            long j = i;
-            if(!dir) { // Reverse strand detection
-                j = s.length()-(i+1);
+            long j = m_pos;
+            if(!dir) { // Reverse strand detection for appropriate location indexing on output
+                j = s.length()-(m_pos+1);
             }
             int score;
             if (anti) {
-                fullseq = s.substr(i+pamsize,20);
+                fullseq = s.substr(m_pos,tss+pamsize);
                 //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(i-4,pamsize+20));
-                if (fullseq.length() < 20) {
+                score = scoring.calcScore(s.substr(m_pos-4,pamsize+20));
+                //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
+                if (fullseq.length() < tss) {
                     break;
                 }
                 seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score);
             } else {
-                fullseq = s.substr(i-20-offset,20);
+                fullseq = s.substr(m_pos-tss,tss+pamsize);
                 //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(i-20-offset,23));
+                score = scoring.calcScore(s.substr(m_pos-tss,tss));
                 seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score);
             }
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
             addToMap(seed,sequence);
         }
-        index = i+1;
-        //reporting to determine speed of access:
-        if (index%10000 == 0) {
-            std::cout << index << " Positions searched." << endl;
+        //Reporter for how much of the sequence has been searched.
+        if (m_pos%10000 == 0) {
+            std::cout << m_pos << " Positions searched." << endl;
         }
+        
     }
 }
 
@@ -144,43 +139,6 @@ int CrisprGroup::charToInt(char c) {
     }
 }
 
-/* Function: evaluate
- * ------------------------------------------------------------------------------------------------------
- * Usage: Determine the PAM structure and whether the seed sequence is 5' or 3' from the PAM.
- */
-
-pamEval CrisprGroup::evaluate(std::string pam, bool anti) {
-    pamEval ret;
-    if (anti) {
-        std::string newpam;
-        for (int i=pam.length()-1;i>=0;i--) {
-            newpam += pam.at(i);
-        }
-        pam = newpam;
-    }
-    bool corefind = false;
-    int pamloc=0;
-    for (int i=0; i<pam.size(); i++) {
-        if (pam[i] == 'N') {
-            ret.offset++;
-        }
-        if (pam[i] == 'G' || pam[i] == 'A' || pam[i] == 'T' || pam[i] == 'C') {
-            if (!corefind) {
-                pamloc = i;
-                corefind = true;
-            }
-            ret.core += pam[i];
-        }
-        else {
-            if (pam[i] != 'N') {
-                ret.options.push_back(i-pamloc);
-                ret.optid.push_back(pam[i]);
-            }
-        }
-    }
-    return ret;
-}
-
 /* Function: processTargets
  * ------------------------------------------------------------------------------------------------------
  * Usage: Takes the Seed_Map and sorts the sequences and their locations by chromosome buckets and into
@@ -202,8 +160,8 @@ void CrisprGroup::processTargets() {
         } else { //If the sequence is unique
             gRNA* myTarget = i.second.at(0);
             //string will contain whether the location is on the sense or antisense strand
-            std::pair<unsigned long, std::string> insert = myTarget->getVectorPair(i.first);
-            //std::pair<long, std::string> insert = std::make_pair(myTarget->getLocation(), totalcompressed);
+            //to generate the uncompressed sequence for debugging, set to false
+            std::pair<unsigned long, std::string> insert = myTarget->getVectorPair(i.first,false);
             total_seqs[myTarget->chrNumber()-1].push_back(insert);
             delete myTarget;
         }

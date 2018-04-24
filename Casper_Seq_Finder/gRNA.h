@@ -26,7 +26,7 @@ public:
     long getLocation() {return PAMlocation;} // the negative refers to the strand direction +/-: sense/anti-sense
     std::string getHypLoc();
     std::string getHypTail();
-    std::pair<unsigned long, std::string> getVectorPair(unsigned long);
+    std::pair<unsigned long, std::string> getVectorPair(unsigned long,bool);
     int chrNumber() {return Chromosome;}
     
     std::string baseConvert(unsigned long long, int);
@@ -44,9 +44,10 @@ private:
     int OnScore;
     
 private:
-    std::string decompressSeq();
+    std::string decompressSeq(unsigned long);
     unsigned long compressSeq(std::string);
     int convertCharBase4(char);
+    char convertBase4toChar(int);
     
 };
 
