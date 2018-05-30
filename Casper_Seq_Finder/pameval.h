@@ -15,17 +15,19 @@
 class pamEval {
 public:
     std::string regexPAM(std::string p) {
-        std::string retpam;
+        std::string retpam = "(?=(";  //initializes lookahead structure
         // Iterate across the pam and generate regex characters for degenerates
         for(int i=0;i<p.size();i++) {
             if (p[i] == 'N') {
                 retpam += '.';
-            } else if (p[i] == 'A' || 'C' || 'T' || 'G') {
+            } else if (p[i] == 'A' || p[i] == 'T' || p[i] == 'C' || p[i] == 'G') {
                 retpam += p[i];
             } else {
                 retpam += degenerateRegex(p[i]);
             }
         }
+        // finish the lookahead regex structure:
+        retpam += ")).";
         std::cout << retpam << std::endl;
         return retpam;
     };

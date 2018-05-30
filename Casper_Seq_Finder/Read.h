@@ -21,7 +21,7 @@ public:
     std::string getLine();
     double getDouble();
     int getInt();
-    void skipLine();
+    std::string FirstLine();
     bool newLine();
     void closeFile();
     //For reading the finder code file

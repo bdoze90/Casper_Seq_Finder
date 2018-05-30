@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <ctype.h>
 #include "CrisprGroup.h"
 #include "gRNA.h"
 
@@ -25,7 +26,7 @@ public:
     ~WriteFile();
 public:
     void setFileName(string fn);
-    void retrieveData(CrisprGroup*);
+    void retrieveData(CrisprGroup*,std::vector<std::string>);
     void printInfo(CrisprGroup*);
 private:
     void inputData(gRNA* g);

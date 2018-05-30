@@ -30,7 +30,7 @@ string toCapitals(string &str); //takes the string to all capitals
 //the line limit for the file and the capitals mixed
 int main() {
     int argc = 12;
-    std::vector<std::string> argv = {"none","spCas9","NGG","None","eco","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/eco.fna","8","12"};
+    std::vector<std::string> argv = {"none","spCas9","NGG","None","kfd","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/JGI_CASPER/kfd.fna","20"};
 //int main(int argc, char *argv[]) {
     // argv contains in order: pamname, PAM, OPAM, OrgCode, anti, returnPath, *file locations.
      string pamname = argv[1];
@@ -44,17 +44,12 @@ int main() {
      Opams.push_back(opam);
      string OrgCode = argv[4];
      string returnPath = argv[6];
-     vector<string> file_locations;
-     for (int l=7; l<argc; l++) {
-     file_locations.push_back(argv[l]);
-     }
      bool anti = false;
      string a = string(argv[5]);
      if (a == "TRUE") {
      anti = true;
      }
-    int seed = std::stoi(string(argv[9]));
-    int tail = std::stoi(string(argv[10]));
+    int clen = std::stoi(string(argv[9]));
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
@@ -68,12 +63,14 @@ int main() {
     //input sequences need to be a vector...
     vector<string> inputSequences;
     string newseq = "";
-    read.skipLine(); //skips the first line of the title of the fasta file
     std::cout << "Reading file...\n";
+    std::vector<std::string> chromscaff;
+    chromscaff.push_back(read.FirstLine());  //reports the first line of the title of the fasta file and adds it to the chromscaff
     while (read.newLine()) {
         std::string line = read.getLine(); //WARNING: THIS ONLY ACCOMODATES A 100 NUCLEOTIDE LINE!
         if (line[0] == '>') {
             std::cout << "Chromosome type " << line << " detected.\n";
+            chromscaff.push_back(line);
             inputSequences.push_back(newseq);
             newseq = "";
             while (line[0] != '>') {
@@ -95,17 +92,17 @@ int main() {
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
-        Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file,seed,tail);
+        Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file,clen);
         if (offexist) {
-            Genome.findPAMs(chromosomeSequence, true, j, Opams[0], false, anti, score_file,seed,tail);
+            Genome.findPAMs(chromosomeSequence, true, j, Opams[0], false, anti, score_file,clen);
         }
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
-        Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file,seed,tail);
+        Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file,clen);
         if (offexist) {
-            Genome.findPAMs(reverseSequence, false, j, Opams[0], false, anti, score_file,seed,tail);
+            Genome.findPAMs(reverseSequence, false, j, Opams[0], false, anti, score_file,clen);
         }
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
@@ -117,7 +114,7 @@ int main() {
     cout << "Printing to file..." << endl;
     WriteFile Output;
     Output.setFileName(returnPath + output_file + ".cspr");
-    Output.retrieveData(&Genome);
+    Output.retrieveData(&Genome,chromscaff);
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     cout << "Time Elapsed: " << duration << "\n";
     //Reporting the statistics:

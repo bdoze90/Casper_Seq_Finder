@@ -36,11 +36,12 @@ int Read::getInt()
 }
 
 
-void Read::skipLine()
+std::string Read::FirstLine()
 {
     char junk[150];
     fscanf( stream, "%149[^\n]", junk );
     std::cout << "First line: " << string(junk) << std::endl;
+    return string(junk);
 }
 
 void Read::closeFile()

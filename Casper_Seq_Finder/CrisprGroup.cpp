@@ -50,11 +50,10 @@ CrisprGroup::~CrisprGroup() {
  * makes a new instance of gRNA in which the sequence is placed into to fill the data of the object.
  */
 
-void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file,int seed, int tail) {
+void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file,int clen) {
     //Scoring algorithm initialization:
     Scoring scoring(score_file);
     int pamsize = p.length();
-    int tss = seed + tail;
     // PAM sequence search initialization
     pamEval pe;
     std::regex pam (pe.regexPAM(p));
@@ -64,7 +63,7 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
     //searching the sequence for the PAM with the iterator
     for (std::sregex_iterator i = begin; i != end; i++) {
         std::smatch match = *i;
-        std::string mpam = match.str();
+        std::string mpam = match.str(1);
         long m_pos = match.position();
         
         if (s.length()-10 > m_pos && m_pos > 35) { //checking to make sure you are not too close to the edge of the sequence
@@ -77,18 +76,18 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
             }
             int score;
             if (anti) {
-                fullseq = s.substr(m_pos,tss+pamsize);
+                fullseq = s.substr(m_pos,clen+pamsize);
                 //scoring the full sequence including PAM and flanking regions
                 score = scoring.calcScore(s.substr(m_pos-4,pamsize+20));
                 //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
-                if (fullseq.length() < tss) {
+                if (fullseq.length() < clen) {
                     break;
                 }
                 seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score);
             } else {
-                fullseq = s.substr(m_pos-tss,tss+pamsize);
+                fullseq = s.substr(m_pos-clen,clen+pamsize);
                 //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-tss,tss));
+                score = scoring.calcScore(s.substr(m_pos-clen,clen));
                 seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score);
             }
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
@@ -161,7 +160,7 @@ void CrisprGroup::processTargets() {
             gRNA* myTarget = i.second.at(0);
             //string will contain whether the location is on the sense or antisense strand
             //to generate the uncompressed sequence for debugging, set to false
-            std::pair<unsigned long, std::string> insert = myTarget->getVectorPair(i.first,false);
+            std::pair<unsigned long, std::string> insert = myTarget->getVectorPair(i.first,true);
             total_seqs[myTarget->chrNumber()-1].push_back(insert);
             delete myTarget;
         }

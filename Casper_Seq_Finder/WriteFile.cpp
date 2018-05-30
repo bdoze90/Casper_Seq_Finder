@@ -22,11 +22,11 @@ void WriteFile::setFileName(string fn) {
     outputfile.open(filename);
 }
 
-void WriteFile::retrieveData(CrisprGroup* genome) {
+void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
     //retrieving the unique sequences
     std::string current;
     for (int i=0;i<genome->chrCount();i++) {
-        outputfile << "CHROMOSOME #" << i+1 << "\n";
+        outputfile << cs[i] << " (" << i+1 << ")" << "\n";
         for (int j=0; j<genome->Size(i); j++) {
             current = genome->nextUnique(i,j);
             outputfile << current << "\n";
@@ -53,10 +53,11 @@ void WriteFile::retrieveData(CrisprGroup* genome) {
 void WriteFile::inputData(gRNA* g) {
     sequence = g->getHypTail();
     chromosome = g->chrNumber();
+    std::string pam = g->getHypPam();
     if (g->getLocation() < 0) {
-        sequence = "-" + sequence;
+        sequence += "-" + pam;
     } else {
-        sequence = "+" + sequence;
+        sequence += "+" + pam;
     }
     score = g->getScore();
     position = g->getHypLoc();

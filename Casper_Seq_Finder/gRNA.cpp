@@ -56,25 +56,16 @@ unsigned long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, 
     /* The following code process the total sequence into multiple elements including the tailSeq, seedSeq, etc. */
     std::string seed;
     std::string tail;
-    seed = seq.substr(seq.size()-16,16);  // 16 is the maximum number of nucleotides able to be stored in unsigned long seed.
-    tail = seq.substr(0,seq.size()-16);
-    tailSeq = compressSeq(tail); //should be fine because limit is 8 nucleotides
-    return compressSeq(seed);
-}
-
-/* Function: pamSequence  !!!WRONG!!!
- * ---------------------------------------------------------------------------------------------------------
- * Usage: returns the part of the total sequence sequence that is the PAM.
- */
-
-std::string gRNA::pamSequence(std::string fullseq) {
-    std::string pam;
-    if (Anti) {
-        pam = fullseq.substr(0,Pamsize);
+    if (!anti) {
+        pamSeq = compressSeq(seq.substr(seq.size()-pamsize,pamsize));
+        seed = seq.substr(seq.size()-pamsize-16,16);  // 16 is the maximum number of nucleotides able to be stored in unsigned long seed.
+        tailSeq = compressSeq(seq.substr(0,seq.size()-16-pamsize));
     } else {
-        pam = fullseq.substr(fullseq.size()-Pamsize,20);
+        pamSeq = compressSeq(seq.substr(0,pamsize));
+        seed = seq.substr(pamsize,16);
+        tailSeq = compressSeq(seq.substr(pamsize+16));
     }
-    return pam;
+    return compressSeq(seed);
 }
 
 /* Function: decompressSeq
@@ -86,7 +77,7 @@ std::string gRNA::pamSequence(std::string fullseq) {
  * an A to the end.
  */
 
-std::string gRNA::decompressSeq(unsigned long cseq) {
+std::string gRNA::decompressSeq(unsigned long cseq, int exp_len) {
     std::string uncompressed;
     //do the reverse binary transition from base-10 to base-4
     while (cseq >= 4) {
@@ -95,6 +86,9 @@ std::string gRNA::decompressSeq(unsigned long cseq) {
         uncompressed += convertBase4toChar(rem);
     }
     uncompressed += convertBase4toChar(cseq);
+    for (int i=uncompressed.size(); i<exp_len; i++) {
+        uncompressed += 'A';
+    }
     return uncompressed;
 }
 
@@ -126,21 +120,28 @@ unsigned long gRNA::compressSeq(std::string s) {
 
 std::pair<unsigned long, std::string> gRNA::getVectorPair(unsigned long seed, bool db) {
     //run base-10 to base-64 conversion on the location and the Sequence and then put them into loc and seq
-    std::string seq;
-    std::string seq2;
+    std::string pam;
     std::string totseq;
-    if (!db) {
-        seq = decompressSeq(seed);
-        seq2 = decompressSeq(tailSeq);
+    std::string seq;
+    if (!Anti) {
+        seq = decompressSeq(tailSeq,4) + decompressSeq(seed,16); //hardcoded to 4 need to change to fullseq-seed size
     } else {
-        seq = baseConvert(seed, 64);
-        seq2 = baseConvert(tailSeq, 64);
+        seq = decompressSeq(seed,16) + decompressSeq(tailSeq,8); //hardcoded to 8 need to change to fullseq-seed size
+    }
+    if (!db) {
+        pam = decompressSeq(pamSeq,Pamsize);
+    } else {
+        seq = baseConvert(compressSeq(seq), 64);
+        pam = baseConvert(pamSeq, 64);
+    }
+    while (seq.size() < 8) {
+        seq = "|" + seq;
     }
     //Get absolute value of the location and add the sense signal:
     if (PAMlocation < 0) {
         PAMlocation *= -1;  //converts the location to absolute value for compression
-        totseq = seq + "-" + seq2;
-    } else { totseq = seq + "+" + seq2;}
+        totseq = seq + "-" + pam;
+    } else { totseq = seq + "+" + pam;}
     //This next part adds the score to the sequence:
     std::string scr = "," + baseConvert(OnScore,64);
     totseq += scr;
@@ -159,6 +160,10 @@ std::string gRNA::getHypLoc() {
 
 std::string gRNA::getHypTail() {
     return baseConvert(tailSeq, 64);
+}
+
+std::string gRNA::getHypPam() {
+    return baseConvert(pamSeq, 64);
 }
 
 /* Function: convertCharBase4

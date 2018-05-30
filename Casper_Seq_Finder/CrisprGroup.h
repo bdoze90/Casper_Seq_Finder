@@ -28,7 +28,7 @@ public:
     CrisprGroup(int, std::string, std::string);
     ~CrisprGroup();
 public:
-    void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr,int,int);
+    void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr,int);
     void printSequences();
     void processTargets();  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
 private:
