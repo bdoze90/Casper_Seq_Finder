@@ -28,9 +28,10 @@ string toCapitals(string &str); //takes the string to all capitals
 /* Main */
 
 //the line limit for the file and the capitals mixed
-int main() {
-    int argc = 12;
-    std::vector<std::string> argv = {"none","spCas9","NGG","None","kfd","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/JGI_CASPER/kfd.fna","20"};
+//int argc, const char * argv[] -> add when exporting executable
+int main(int argc, const char * argv[]) {
+    //int argc = 12;
+    //std::vector<std::string> argv = {"none","spCas9","NGG","None","kfd","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/JGI_CASPER/kfd.fna","20"};
 //int main(int argc, char *argv[]) {
     // argv contains in order: pamname, PAM, OPAM, OrgCode, anti, returnPath, *file locations.
      string pamname = argv[1];
