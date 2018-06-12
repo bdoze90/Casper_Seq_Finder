@@ -31,7 +31,7 @@ gRNA::~gRNA() {
     PAMlocation = 0;
     Chromosome = 0;
     Pamsize = 0;
-    tailSeq = NULL;
+    tailSeq = 0;
     //does there need to be any extra here i.e. deleting pointers?
 }
 
