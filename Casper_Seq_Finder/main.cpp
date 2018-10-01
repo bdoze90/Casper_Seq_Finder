@@ -29,38 +29,29 @@ string toCapitals(string &str); //takes the string to all capitals
 
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
-int main(int argc, const char * argv[]) {
-    //int argc = 12;
-    //std::vector<std::string> argv = {"none","spCas9","NGG","None","kfd","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/JGI_CASPER/kfd.fna","20"};
-//int main(int argc, char *argv[]) {
-    // argv contains in order: pamname, PAM, OPAM, OrgCode, anti, returnPath, *file locations.
+int main() {
+    int argc = 10;
+    std::vector<std::string> argv = {"Executable","spCas9","AAG","sce","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/sce.fna", "30", "16"};
      string pamname = argv[1];
      string pam = argv[2];
-     vector<string> Opams;
-     bool offexist = true;
-     string opam = string(argv[3]);
-     if (opam == "None") {
-     offexist = false;
-     }
-     Opams.push_back(opam);
-     string OrgCode = argv[4];
-     string returnPath = argv[6];
+     string OrgCode = argv[3];
+     string returnPath = argv[5];
      bool anti = false;
-     string a = string(argv[5]);
+     string a = string(argv[4]);
      if (a == "TRUE") {
      anti = true;
      }
-    int clen = std::stoi(string(argv[9]));
+    int clen = std::stoi(string(argv[8]));
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
     start = std::clock();
     string output_file = OrgCode + pamname;
     Read read;
-    read.setFileName(argv[8]);
-    std::cout << "Opening fasta-type file: " << argv[8] << std::endl;
+    read.setFileName(argv[7]);
+    std::cout << "Opening fasta-type file: " << argv[7] << std::endl;
     read.openFile();
-    std::string score_file = argv[7];
+    std::string score_file = argv[6];
     //input sequences need to be a vector...
     vector<string> inputSequences;
     string newseq = "";
@@ -74,9 +65,6 @@ int main(int argc, const char * argv[]) {
             chromscaff.push_back(line);
             inputSequences.push_back(newseq);
             newseq = "";
-            while (line[0] != '>') {
-                line = read.getLine();
-            }
         } else {
             newseq += line; //THIS ACCOMODATES UP TO A 100000000 NUCLEOTIDE LINE
         }
@@ -94,17 +82,11 @@ int main(int argc, const char * argv[]) {
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
         Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file,clen);
-        if (offexist) {
-            Genome.findPAMs(chromosomeSequence, true, j, Opams[0], false, anti, score_file,clen);
-        }
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
         Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file,clen);
-        if (offexist) {
-            Genome.findPAMs(reverseSequence, false, j, Opams[0], false, anti, score_file,clen);
-        }
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
         cout << "Chromosome " << j+1 << " complete." << endl;
@@ -117,7 +99,7 @@ int main(int argc, const char * argv[]) {
     Output.setFileName(returnPath + output_file + ".cspr");
     Output.retrieveData(&Genome,chromscaff);
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-    cout << "Time Elapsed: " << duration << "\n";
+    cout << "Time Elapsed: " << duration/60 << " minutes \n";
     //Reporting the statistics:
     cout << "There were " << Genome.totSize() << " unique sequences." << endl;
     cout << "There were " << Genome.repSize() << " identical repeated sequences." << endl;

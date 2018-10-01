@@ -44,9 +44,9 @@ private:
     int curchrom;
     
 private:
-    std::unordered_map<unsigned long, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
-    std::vector<std::vector<std::pair<long, std::string>>> total_seqs; //sorted unique sequences
-    std::vector<std::pair<unsigned long, std::vector<gRNA*>>> repeat_seqs; //unsorted repeated sequences
+    std::unordered_map<unsigned int, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
+    std::vector<std::vector<std::pair<int, std::string>>> total_seqs; //sorted unique sequences
+    std::vector<std::pair<unsigned int, std::vector<gRNA*>>> repeat_seqs; //unsorted repeated sequences
     
 /* Stuff for iteration */
 public:
@@ -55,7 +55,7 @@ public:
     unsigned long totSize();
     unsigned long repSize() {return repeat_seqs.size();}
     std::string nextUnique(int, long);
-    std::pair<unsigned long, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
+    std::pair<unsigned int, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
 };
 
 

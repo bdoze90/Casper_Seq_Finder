@@ -26,7 +26,7 @@ public:
     std::string getHypLoc();
     std::string getHypTail();
     std::string getHypPam();
-    std::pair<unsigned long, std::string> getVectorPair(unsigned long,bool);
+    std::pair<unsigned int, std::string> getVectorPair(unsigned int,bool);  //Seed sequence is capable of being 16 nucleotides in this iteration
     int chrNumber() {return Chromosome;}
     
     std::string baseConvert(unsigned long long, int);
@@ -35,14 +35,14 @@ public:
 
     
 private:
-    unsigned int tailSeq; // capable of storing a 8 nucleotide sequence (probably will only use half)
-    unsigned int pamSeq; // capable of storing an 8 nucleotide PAM sequence
+    unsigned int tailSeq; // capable of storing a 16 nucleotide sequence
+    unsigned short pamSeq; // capable of storing an 8 nucleotide PAM sequence
     long PAMlocation;
-    int Chromosome;
-    int Pamsize;
+    unsigned short Chromosome;
+    short Pamsize;
     bool Anti;
-    int SeedLength;
-    int OnScore;
+    short SeedLength;
+    short OnScore;
     
 private:
     std::string decompressSeq(unsigned long, int);
