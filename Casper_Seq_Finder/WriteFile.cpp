@@ -17,9 +17,10 @@ WriteFile::~WriteFile() {
     outputfile.close();
 }
 
-void WriteFile::setFileName(string fn) {
+void WriteFile::setFileName(string fn, string genome_name) {
     filename = fn;
     outputfile.open(filename);
+    outputfile << "GENOME: " << genome_name << "\n";
 }
 
 void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
@@ -27,7 +28,8 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
     std::string current;
     for (int i=0;i<genome->chrCount();i++) {
         outputfile << cs[i] << " (" << i+1 << ")" << "\n";
-        for (int j=0; j<genome->Size(i); j++) {
+        // This for loop counter is reversed because the indeces within each chromosome are in descending order to help with memory
+        for (int j=genome->Size(i)-1; j>=0; j--) {
             current = genome->nextUnique(i,j);
             outputfile << current << "\n";
         }

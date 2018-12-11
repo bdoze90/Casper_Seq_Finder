@@ -25,18 +25,19 @@
 
 class CrisprGroup {
 public:
-    CrisprGroup(int, std::string, std::string);
+    CrisprGroup(int, std::string, std::string,int,int);
     ~CrisprGroup();
 public:
-    void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr,int);
+    void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr);
     void printSequences();
     void processTargets();  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
 private:
     std::string filename;
+    int len_seed;
+    int len_seq;
 private:
-    void addToMap(unsigned long, gRNA*);
+    void addToMap(unsigned int, gRNA*);
     int charToInt(char);
-    void tempFileNAGs(int);
     static pamEval evaluate(std::string, bool);
     std::string compressSequence(std::string);
     gRNA* sCur;
@@ -45,7 +46,7 @@ private:
     
 private:
     std::unordered_map<unsigned int, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
-    std::vector<std::vector<std::pair<int, std::string>>> total_seqs; //sorted unique sequences
+    std::vector<std::vector<std::pair<long, std::string>>> total_seqs; //sorted unique sequences
     std::vector<std::pair<unsigned int, std::vector<gRNA*>>> repeat_seqs; //unsorted repeated sequences
     
 /* Stuff for iteration */

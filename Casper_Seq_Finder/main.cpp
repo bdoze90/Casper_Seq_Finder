@@ -31,7 +31,7 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main() {
     int argc = 10;
-    std::vector<std::string> argv = {"Executable","spCas9","AAG","sce","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/sce.fna", "30", "16"};
+    std::vector<std::string> argv = {"Executable","spCas9","NGG","sce","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/sce.fna", "20", "16"};
      string pamname = argv[1];
      string pam = argv[2];
      string OrgCode = argv[3];
@@ -41,12 +41,14 @@ int main() {
      if (a == "TRUE") {
      anti = true;
      }
-    int clen = std::stoi(string(argv[8]));
+    string genome_name = string(argv[8]);
+    int clen = std::stoi(string(argv[9]));
+    int slen = std::stoi(string(argv[10]));
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
     start = std::clock();
-    string output_file = OrgCode + pamname;
+    string output_file = OrgCode + "_" + pamname;
     Read read;
     read.setFileName(argv[7]);
     std::cout << "Opening fasta-type file: " << argv[7] << std::endl;
@@ -74,35 +76,36 @@ int main() {
     inputSequences.push_back(newseq);
     newseq.clear();
     std::cout << inputSequences.size() << endl;
-    CrisprGroup Genome(inputSequences.size(), returnPath, OrgCode);
+    CrisprGroup *Genome = new CrisprGroup(inputSequences.size(), returnPath, OrgCode,clen,slen);
     //Beginning of the for loop that iterates through the Fasta file to find targets
     std::cout << "Processing the genome for " << pamname << " target sequences.\n";
     for (int j=0; j<inputSequences.size(); j++) {
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
-        Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file,clen);
+        Genome->findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file);
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
-        Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file,clen);
+        Genome->findPAMs(reverseSequence, false, j, pam, true, anti, score_file);
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
         cout << "Chromosome " << j+1 << " complete." << endl;
     }
 
-    Genome.processTargets();
+    Genome->processTargets();
     cout << "Finished Locating All Cas9 target sequences" << endl;
-    cout << "Printing to file..." << endl;
     WriteFile Output;
-    Output.setFileName(returnPath + output_file + ".cspr");
-    Output.retrieveData(&Genome,chromscaff);
+    Output.setFileName(returnPath + output_file + ".cspr", genome_name);
+    //Reporting the statistics:
+    cout << "There were " << Genome->totSize() << " unique sequences." << endl;
+    cout << "There were " << Genome->repSize() << " identical repeated sequences." << endl;
+    cout << "Printing to file..." << endl;
+    Output.retrieveData(Genome,chromscaff);
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     cout << "Time Elapsed: " << duration/60 << " minutes \n";
-    //Reporting the statistics:
-    cout << "There were " << Genome.totSize() << " unique sequences." << endl;
-    cout << "There were " << Genome.repSize() << " identical repeated sequences." << endl;
+    delete Genome;
     cout << "Finished Creating File.\n To search restart CASPER and select Organism." << endl;
     return 0;
 }

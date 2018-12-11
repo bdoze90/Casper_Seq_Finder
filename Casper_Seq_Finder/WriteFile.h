@@ -25,7 +25,7 @@ public:
     WriteFile();
     ~WriteFile();
 public:
-    void setFileName(string fn);
+    void setFileName(string, string);
     void retrieveData(CrisprGroup*,std::vector<std::string>);
     void printInfo(CrisprGroup*);
 private:
