@@ -31,7 +31,7 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main(int argc, const char * argv[]) {
     //int argc = 10;
-    //std::vector<std::string> argv = {"Executable","spCas9","NGG","sce","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16"};
+    //std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","sce","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CRISPRscan.txt","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
      string pamname = argv[1];
      string pam = argv[2];
      string OrgCode = argv[3];
@@ -44,6 +44,7 @@ int main(int argc, const char * argv[]) {
     string genome_name = string(argv[8]);
     int clen = std::stoi(string(argv[9]));
     int slen = std::stoi(string(argv[10]));
+    string misc_notes = string(argv[11]);
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
@@ -72,6 +73,8 @@ int main(int argc, const char * argv[]) {
         }
     }
     std::cout << "Finished reading in the genome file.\n";
+    //Container for holding the statistics of the fasta for the end:
+    std::vector<int> karystats;
     //fixes the off by one of the input sequences:
     inputSequences.push_back(newseq);
     newseq.clear();
@@ -83,6 +86,7 @@ int main(int argc, const char * argv[]) {
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
+        karystats.push_back(chromosomeSequence.size());
         Genome->findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file);
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
@@ -97,6 +101,7 @@ int main(int argc, const char * argv[]) {
     Genome->processTargets();
     cout << "Finished Locating All Cas9 target sequences" << endl;
     WriteFile Output;
+    Output.inputStats(karystats, misc_notes);  // Load the statistics of the size of the chromosomes/scaffolds
     Output.setFileName(returnPath + output_file + ".cspr", genome_name);
     //Reporting the statistics:
     cout << "There were " << Genome->totSize() << " unique sequences." << endl;

@@ -69,7 +69,7 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
         std::string mpam = match.str(1);
         long m_pos = match.position();
         
-        if (s.length()-10 > m_pos && m_pos > 35) { //checking to make sure you are not too close to the edge of the sequence
+        if (s.length()-10 > m_pos && m_pos > 30) { //checking to make sure you are not too close to the edge of the sequence
             gRNA* sequence = new gRNA;
             std::string fullseq;
             unsigned long seed;
