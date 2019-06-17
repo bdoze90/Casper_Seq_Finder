@@ -17,50 +17,34 @@ using namespace std;
 
 void Read::openFile()
 {
-    stream = fopen( filename.c_str(), "r" );
-    assert(stream);
-}
-
-double Read::getDouble()
-{
-    double rv;
-    fscanf( stream, "%lf\n", &rv );
-    return rv;
-}
-
-int Read::getInt()
-{
-    int rv;
-    fscanf( stream, "%d\n", &rv);
-    return rv;
+    stream = new std::ifstream;
+    stream->open(filename, std::ifstream::in);
 }
 
 
 std::string Read::FirstLine()
 {
-    char junk[150];
-    fscanf( stream, "%149[^\n]", junk );
-    std::cout << "First line: " << string(junk) << std::endl;
-    return string(junk);
+    std::string junk;
+    std::getline(*stream, junk);
+    std::cout << "First line: " << junk << std::endl;
+    return junk;
 }
 
 void Read::closeFile()
 {
-    if(stream) fclose( stream );
+    stream->close();
 }
 
 string Read::getLine()
 {
-    char* nts = new char[100000000];
-    fscanf( stream, "%s\n", nts );
-    string retstr = string(nts);
-    delete[] nts;
-    return retstr;
+    std::string nts;
+    std::getline(*stream, nts);
+    return nts;
 }
 
 bool Read::newLine()
 {
-    if (feof(stream) == 0 ) return true;
+    if (!stream->eof()) return true;
     return false;
 }
 
@@ -68,57 +52,57 @@ bool Read::newLine()
 
 string Read::getPAM()
 {
-    char line[25];
-    fscanf(stream, "%s\n", line );
-    string retstr = string(line).substr(17,10);
-    return retstr;
+    std::string line;
+    std::getline(*stream, line);
+    return line.substr(17,10);
 }
 
 vector<string> Read::getOPAMs()
 {
     vector<string> ret;
-    char line[20];
-    fscanf(stream, "%s\n", line );
-    int i;
-    fscanf(stream, "%d\n", &i);
-    opamnum = i;
-    for (int j=0; j<i; j++) {
-        char aline[10];
-        fscanf(stream, "%s\n", aline);
-        ret.push_back(string(aline));
+    std::string line;
+    std::getline(*stream, line);
+    std::string opam_i;
+    std::getline(*stream, opam_i);
+    opamnum = std::stoi(opam_i);
+    for (int j = 0; j < opamnum; j++) {
+        std::string aline;
+        std::getline(*stream, aline);
+        ret.push_back(aline);
     }
     return ret;
 }
 
 string Read::getOrgCode()
 {
-    char line[25];
-    fscanf(stream, "%s\n", line);
-    return string(line).substr(14,25);
+    std::string line;
+    std::getline(*stream, line);
+    return line.substr(14, 25);
 }
 
 vector<string> Read::getFileLocations()
 {
     vector<string> ret;
-    char line[20];
-    fscanf(stream, "%s\n", line );
-    int i;
-    fscanf(stream, "%d\n", &i);
-    for (int j=0; j<i; j++) {
-        char aline[100];
-        fscanf(stream, "%s\n", aline);
-        ret.push_back(string(aline));
+    std::string line;
+    std::getline(*stream, line);
+    std::string fi;
+    std::getline(*stream, fi);
+    int i = std::stoi(fi);
+    for (int j = 0; j < i; j++) {
+        std::string aline;
+        std::getline(*stream, aline);
+        ret.push_back(aline);
     }
     return ret;
 }
 
 bool Read::getAnti()
 {
-    char line[10];
-    fscanf(stream, "%5s", line);
-    string anti = string(line);
-    if (anti == "TRUE") {
+    std::string line;
+    std::getline(*stream, line);
+    if (line == "TRUE") {
         return true;
-    } else return false;
+    }
+    else return false;
 }
 

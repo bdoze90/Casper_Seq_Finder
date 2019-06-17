@@ -62,9 +62,9 @@ int main(int argc, const char * argv[]) {
     std::vector<std::string> chromscaff;
     chromscaff.push_back(read.FirstLine());  //reports the first line of the title of the fasta file and adds it to the chromscaff
     while (read.newLine()) {
-        std::string line = read.getLine(); //WARNING: THIS ONLY ACCOMODATES A 100 NUCLEOTIDE LINE!
+        std::string line = read.getLine();
         if (line[0] == '>') {
-            std::cout << "Chromosome type " << line << " detected.\n";
+            std::cout << "New Chromosome/Scaffold detected.\n";
             chromscaff.push_back(line);
             inputSequences.push_back(newseq);
             newseq = "";
