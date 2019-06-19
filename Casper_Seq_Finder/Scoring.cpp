@@ -49,25 +49,41 @@ void Scoring::scanScore() {
 
 void Scoring::fillScoringAlgorithm() {
     //Establish file stream
-    FILE* stream = fopen( scoring_file.c_str(), "r" );
-    assert(stream);
+    std::ifstream* stream = new std::ifstream;
+    stream->open(scoring_file.c_str(), std::ifstream::in);
+    
+    //Get to the CRISPRSCAN data section of the file:
+    std::string myline = "myline";
+    while (myline != "CRISPRSCAN_DATA") {
+        std::getline(*stream, myline);
+    }
     
     //Load Information
-    char nts[3];
-    int p;
-    double sc;
-    while (feof(stream) == 0) {
+    std::string nts;
+    std::getline(*stream,nts);
+    while (nts[0] != '-') {
         iden nid;
-        fscanf( stream, "%s\t", nts);
-        nid.nt1 = nts[0];
-        nid.nt2 = nts[1];
-        fscanf(stream, "%d\t", &p);
-        nid.position = p;
-        fscanf(stream, "%lf\n", &sc);
-        nid.odds_score = sc;
+        std::vector<std::string> mytoke = Msplit(nts, '\t');
+        nid.nt1 = mytoke[0][0];
+        nid.nt2 = mytoke[0][1];
+        nid.position = std::stoi(mytoke[1]);
+        nid.odds_score = std::stod(mytoke[2]);
         Idens.push_back(nid);
+        std::getline(*stream,nts);
     }
-    if(stream) fclose( stream );
+    stream->close();
+}
+
+/* A method for splitting the repeats section. */
+std::vector<std::string> Scoring::Msplit(const std::string &text, char sep) {
+    std::vector<std::string> tokens;
+    std::size_t start = 0, end = 0;
+    while ((end = text.find(sep, start)) != std::string::npos) {
+        tokens.push_back(text.substr(start, end - start));
+        start = end + 1;
+    }
+    tokens.push_back(text.substr(start));
+    return tokens;
 }
 
 
