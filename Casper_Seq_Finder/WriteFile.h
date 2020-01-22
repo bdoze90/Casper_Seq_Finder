@@ -25,7 +25,8 @@ public:
     WriteFile();
     ~WriteFile();
 public:
-    void setFileName(string fn);
+    void inputStats(std::vector<int>,std::string);
+    void setFileName(string, string);
     void retrieveData(CrisprGroup*,std::vector<std::string>);
     void printInfo(CrisprGroup*);
 private:
@@ -35,6 +36,8 @@ private:
     std::string compressSequence(std::string s);
 private:
     string filename;
+    string chr_stats_str;
+    string mystats;
     ofstream outputfile;
     int chromosome;
     std::string position;

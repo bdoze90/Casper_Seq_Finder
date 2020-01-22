@@ -24,6 +24,7 @@ public:
 private:
     void scanScore();
     void fillScoringAlgorithm();
+    std::vector<std::string> Msplit(const std::string &text, char sep);
 private:
     std::string scoring_file;
     struct iden {

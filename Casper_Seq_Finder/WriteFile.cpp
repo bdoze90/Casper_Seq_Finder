@@ -17,9 +17,22 @@ WriteFile::~WriteFile() {
     outputfile.close();
 }
 
-void WriteFile::setFileName(string fn) {
+// See the setFileName function for incorporation of this data in the output file
+void WriteFile::inputStats(std::vector<int> kary, std::string misc) {
+    chr_stats_str = "KARYSTATS: ";
+    for (int i = 0; i<kary.size(); i++) {
+        chr_stats_str += to_string(kary[i]) + ",";
+    }
+    mystats = "MISCELLANEOUS: " + misc;
+    
+}
+
+void WriteFile::setFileName(string fn, string genome_name) {
     filename = fn;
     outputfile.open(filename);
+    outputfile << "GENOME: " << genome_name << "\n";
+    outputfile << chr_stats_str << "\n";
+    outputfile << mystats << "\n";
 }
 
 void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
@@ -27,6 +40,7 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
     std::string current;
     for (int i=0;i<genome->chrCount();i++) {
         outputfile << cs[i] << " (" << i+1 << ")" << "\n";
+        // Loop counter is in the correct direction (positive to file).
         for (int j=0; j<genome->Size(i); j++) {
             current = genome->nextUnique(i,j);
             outputfile << current << "\n";

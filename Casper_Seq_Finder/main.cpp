@@ -30,37 +30,31 @@ string toCapitals(string &str); //takes the string to all capitals
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
 int main(int argc, const char * argv[]) {
-    //int argc = 12;
-    //std::vector<std::string> argv = {"none","spCas9","NGG","None","kfd","TRUE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPER-master/CRISPRscan.txt","/Users/brianmendoza/Dropbox/JGI_CASPER/kfd.fna","20"};
-//int main(int argc, char *argv[]) {
-    // argv contains in order: pamname, PAM, OPAM, OrgCode, anti, returnPath, *file locations.
+    //int argc = 10;
+    //std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","scede","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPERinfo","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
      string pamname = argv[1];
      string pam = argv[2];
-     vector<string> Opams;
-     bool offexist = true;
-     string opam = string(argv[3]);
-     if (opam == "None") {
-     offexist = false;
-     }
-     Opams.push_back(opam);
-     string OrgCode = argv[4];
-     string returnPath = argv[6];
+     string OrgCode = argv[3];
+     string returnPath = argv[5];
      bool anti = false;
-     string a = string(argv[5]);
+     string a = string(argv[4]);
      if (a == "TRUE") {
      anti = true;
      }
+    string genome_name = string(argv[8]);
     int clen = std::stoi(string(argv[9]));
+    int slen = std::stoi(string(argv[10]));
+    string misc_notes = string(argv[11]);
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
     start = std::clock();
-    string output_file = OrgCode + pamname;
+    string output_file = OrgCode + "_" + pamname;
     Read read;
-    read.setFileName(argv[8]);
-    std::cout << "Opening fasta-type file: " << argv[8] << std::endl;
+    read.setFileName(argv[7]);
+    std::cout << "Opening fasta-type file: " << argv[7] << std::endl;
     read.openFile();
-    std::string score_file = argv[7];
+    std::string score_file = argv[6];
     //input sequences need to be a vector...
     vector<string> inputSequences;
     string newseq = "";
@@ -68,59 +62,55 @@ int main(int argc, const char * argv[]) {
     std::vector<std::string> chromscaff;
     chromscaff.push_back(read.FirstLine());  //reports the first line of the title of the fasta file and adds it to the chromscaff
     while (read.newLine()) {
-        std::string line = read.getLine(); //WARNING: THIS ONLY ACCOMODATES A 100 NUCLEOTIDE LINE!
+        std::string line = read.getLine();
         if (line[0] == '>') {
-            std::cout << "Chromosome type " << line << " detected.\n";
+            std::cout << "New Chromosome/Scaffold detected.\n";
             chromscaff.push_back(line);
             inputSequences.push_back(newseq);
             newseq = "";
-            while (line[0] != '>') {
-                line = read.getLine();
-            }
         } else {
             newseq += line; //THIS ACCOMODATES UP TO A 100000000 NUCLEOTIDE LINE
         }
     }
     std::cout << "Finished reading in the genome file.\n";
+    //Container for holding the statistics of the fasta for the end:
+    std::vector<int> karystats;
     //fixes the off by one of the input sequences:
     inputSequences.push_back(newseq);
     newseq.clear();
     std::cout << inputSequences.size() << endl;
-    CrisprGroup Genome(inputSequences.size(), returnPath, OrgCode);
+    CrisprGroup *Genome = new CrisprGroup(inputSequences.size(), returnPath, OrgCode,clen,slen);
     //Beginning of the for loop that iterates through the Fasta file to find targets
     std::cout << "Processing the genome for " << pamname << " target sequences.\n";
     for (int j=0; j<inputSequences.size(); j++) {
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
-        Genome.findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file,clen);
-        if (offexist) {
-            Genome.findPAMs(chromosomeSequence, true, j, Opams[0], false, anti, score_file,clen);
-        }
+        karystats.push_back(chromosomeSequence.size());
+        Genome->findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file);
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
-        Genome.findPAMs(reverseSequence, false, j, pam, true, anti, score_file,clen);
-        if (offexist) {
-            Genome.findPAMs(reverseSequence, false, j, Opams[0], false, anti, score_file,clen);
-        }
+        Genome->findPAMs(reverseSequence, false, j, pam, true, anti, score_file);
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
         cout << "Chromosome " << j+1 << " complete." << endl;
     }
 
-    Genome.processTargets();
+    Genome->processTargets();
     cout << "Finished Locating All Cas9 target sequences" << endl;
-    cout << "Printing to file..." << endl;
     WriteFile Output;
-    Output.setFileName(returnPath + output_file + ".cspr");
-    Output.retrieveData(&Genome,chromscaff);
-    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-    cout << "Time Elapsed: " << duration << "\n";
+    Output.inputStats(karystats, misc_notes);  // Load the statistics of the size of the chromosomes/scaffolds
+    Output.setFileName(returnPath + output_file + ".cspr", genome_name);
     //Reporting the statistics:
-    cout << "There were " << Genome.totSize() << " unique sequences." << endl;
-    cout << "There were " << Genome.repSize() << " identical repeated sequences." << endl;
+    cout << "There were " << Genome->totSize() << " unique sequences." << endl;
+    cout << "There were " << Genome->repSize() << " identical repeated sequences." << endl;
+    cout << "Printing to file..." << endl;
+    Output.retrieveData(Genome,chromscaff);
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    cout << "Time Elapsed: " << duration/60 << " minutes \n";
+    delete Genome;
     cout << "Finished Creating File.\n To search restart CASPER and select Organism." << endl;
     return 0;
 }

@@ -28,7 +28,6 @@ public:
         }
         // finish the lookahead regex structure:
         retpam += ")).";
-        std::cout << retpam << std::endl;
         return retpam;
     };
 private:

@@ -44,7 +44,7 @@ gRNA::~gRNA() {
  * that it can be stored in the Seed_Map of CrisprGroup for comparison to discover repeats.
  */
 
-unsigned long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, bool strand, std::string seq, int score) {
+unsigned long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, bool strand, std::string seq, int score, int seedsize) {
     PAMlocation = index;
     if (!strand) {
         PAMlocation *= -1;
@@ -58,12 +58,12 @@ unsigned long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, 
     std::string tail;
     if (!anti) {
         pamSeq = compressSeq(seq.substr(seq.size()-pamsize,pamsize));
-        seed = seq.substr(seq.size()-pamsize-16,16);  // 16 is the maximum number of nucleotides able to be stored in unsigned long seed.
-        tailSeq = compressSeq(seq.substr(0,seq.size()-16-pamsize));
+        seed = seq.substr(seq.size()-pamsize-seedsize,seedsize);  // 16 is the maximum number of nucleotides able to be stored in unsigned long seed.
+        tailSeq = compressSeq(seq.substr(0,seq.size()-seedsize-pamsize));
     } else {
         pamSeq = compressSeq(seq.substr(0,pamsize));
-        seed = seq.substr(pamsize,16);
-        tailSeq = compressSeq(seq.substr(pamsize+16));
+        seed = seq.substr(pamsize,seedsize);
+        tailSeq = compressSeq(seq.substr(pamsize+seedsize));
     }
     return compressSeq(seed);
 }
@@ -77,7 +77,7 @@ unsigned long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, 
  * an A to the end.
  */
 
-std::string gRNA::decompressSeq(unsigned long cseq, int exp_len) {
+std::string gRNA::decompressSeq(unsigned int cseq, int exp_len) {
     std::string uncompressed;
     //do the reverse binary transition from base-10 to base-4
     while (cseq >= 4) {
@@ -118,7 +118,7 @@ unsigned long gRNA::compressSeq(std::string s) {
  * the function.
  */
 
-std::pair<unsigned long, std::string> gRNA::getVectorPair(unsigned long seed, bool db) {
+std::pair<unsigned int, std::string> gRNA::getVectorPair(unsigned int seed, bool db) {
     //run base-10 to base-64 conversion on the location and the Sequence and then put them into loc and seq
     std::string pam;
     std::string totseq;
@@ -196,7 +196,7 @@ char gRNA::convertBase4toChar(int i) {
  * Usage: Simple switch from a base10 to the base specified (will be called 64 in this class).
  */
 
-std::string gRNA::baseConvert(unsigned long long number, int base) {
+std::string gRNA::baseConvert(unsigned long number, int base) {
     std::string base64set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=/"; //base64 modification so +- can be used for strand direction
     std::string base32set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; //base32
     int rem;

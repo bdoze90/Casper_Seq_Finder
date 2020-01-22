@@ -25,18 +25,19 @@
 
 class CrisprGroup {
 public:
-    CrisprGroup(int, std::string, std::string);
+    CrisprGroup(int, std::string, std::string,int,int);
     ~CrisprGroup();
 public:
-    void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr,int);
+    void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr);
     void printSequences();
     void processTargets();  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
 private:
     std::string filename;
+    int len_seed;
+    int len_seq;
 private:
-    void addToMap(unsigned long, gRNA*);
+    void addToMap(unsigned int, gRNA*);
     int charToInt(char);
-    void tempFileNAGs(int);
     static pamEval evaluate(std::string, bool);
     std::string compressSequence(std::string);
     gRNA* sCur;
@@ -44,9 +45,9 @@ private:
     int curchrom;
     
 private:
-    std::unordered_map<unsigned long, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
+    std::unordered_map<unsigned int, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
     std::vector<std::vector<std::pair<long, std::string>>> total_seqs; //sorted unique sequences
-    std::vector<std::pair<unsigned long, std::vector<gRNA*>>> repeat_seqs; //unsorted repeated sequences
+    std::vector<std::pair<unsigned int, std::vector<gRNA*>>> repeat_seqs; //unsorted repeated sequences
     
 /* Stuff for iteration */
 public:
@@ -55,7 +56,7 @@ public:
     unsigned long totSize();
     unsigned long repSize() {return repeat_seqs.size();}
     std::string nextUnique(int, long);
-    std::pair<unsigned long, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
+    std::pair<unsigned int, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
 };
 
 

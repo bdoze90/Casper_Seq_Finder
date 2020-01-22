@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 class Read {
@@ -19,8 +20,6 @@ public:
     void setFileName(std::string name) { filename = name; }
     void openFile();
     std::string getLine();
-    double getDouble();
-    int getInt();
     std::string FirstLine();
     bool newLine();
     void closeFile();
@@ -31,12 +30,13 @@ public:
     std::string getOrgCode();
     std::vector<std::string> getFileLocations();
     bool getAnti();
-    int getOpamNum() {return opamnum;}
+    int getOpamNum() { return opamnum; }
 private:
     int opamnum;
     std::string filename;
-    FILE* stream;
+    std::ifstream* stream;
 };
 
 
 #endif /* defined(__Casper_Seq_Finder__Read__) */
+

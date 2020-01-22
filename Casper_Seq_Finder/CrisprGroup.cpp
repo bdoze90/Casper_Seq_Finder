@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <algorithm>
 #include <assert.h>
 #include "CrisprGroup.h"
 #include "Scoring.h"
@@ -26,10 +27,12 @@
  * Creates a CrisprGroup object and initializes the variables to the appropriate values
  */
 
-CrisprGroup:: CrisprGroup(int num, std::string base, std::string org) {
+CrisprGroup:: CrisprGroup(int num, std::string base, std::string org, int tot_length, int seed_length) {
     sCur = NULL;
     numChromosomes = num;
     filename = base + "NAG_files/" + org + ".txt";  // why does this say NAG_files????
+    len_seq = tot_length;
+    len_seed = seed_length;
 }
 
 /* Destructor: ~CrisprGroup
@@ -50,7 +53,7 @@ CrisprGroup::~CrisprGroup() {
  * makes a new instance of gRNA in which the sequence is placed into to fill the data of the object.
  */
 
-void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file,int clen) {
+void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file) {
     //Scoring algorithm initialization:
     Scoring scoring(score_file);
     int pamsize = p.length();
@@ -66,7 +69,7 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
         std::string mpam = match.str(1);
         long m_pos = match.position();
         
-        if (s.length()-10 > m_pos && m_pos > 35) { //checking to make sure you are not too close to the edge of the sequence
+        if (s.length()-10 > m_pos && m_pos > 30) { //checking to make sure you are not too close to the edge of the sequence
             gRNA* sequence = new gRNA;
             std::string fullseq;
             unsigned long seed;
@@ -76,19 +79,19 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
             }
             int score;
             if (anti) {
-                fullseq = s.substr(m_pos,clen+pamsize);
+                fullseq = s.substr(m_pos,len_seq+pamsize);
                 //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-4,pamsize+20));
+                score = scoring.calcScore(s.substr(m_pos-4,pamsize+len_seq));
                 //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
-                if (fullseq.length() < clen) {
+                if (fullseq.length() < len_seq) {
                     break;
                 }
-                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score);
+                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score,len_seed);
             } else {
-                fullseq = s.substr(m_pos-clen,clen+pamsize);
+                fullseq = s.substr(m_pos-len_seq,len_seq+pamsize);
                 //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-clen,clen));
-                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score);
+                score = scoring.calcScore(s.substr(m_pos-len_seq,len_seq));
+                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score,len_seed);
             }
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
             addToMap(seed,sequence);
@@ -108,9 +111,9 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
  * comparing against the Seed_Map where all the seeds that have been seen before are stored. This
  */
 
-void CrisprGroup::addToMap(unsigned long seed, gRNA* obj) {
+void CrisprGroup::addToMap(unsigned int seed, gRNA* obj) {
     //checking if the seed sequence has already been seen
-    std::unordered_map<unsigned long, std::vector<gRNA*>>::const_iterator got = Seed_Map.find(seed);
+    std::unordered_map<unsigned int, std::vector<gRNA*>>::const_iterator got = Seed_Map.find(seed);
     //if not found create a new map entry with the seed and new vector for storing any gRNA objects.
     if (got == Seed_Map.end()) {
         std::vector<gRNA*> locs;
@@ -154,19 +157,20 @@ void CrisprGroup::processTargets() {
     //Iterating across the Seed_Map:
     for (const auto &i : Seed_Map) {
         if (i.second.size() != 1) { //If the sequence is non-unique
-            std::pair<unsigned long, std::vector<gRNA*>> insert = std::make_pair(i.first, i.second);
+            std::pair<unsigned int, std::vector<gRNA*>> insert = std::make_pair(i.first, i.second);
             repeat_seqs.push_back(insert);
         } else { //If the sequence is unique
             gRNA* myTarget = i.second.at(0);
             //string will contain whether the location is on the sense or antisense strand
             //to generate the uncompressed sequence for debugging, set to false
-            std::pair<unsigned long, std::string> insert = myTarget->getVectorPair(i.first,true);
+            std::pair<unsigned int, std::string> insert = myTarget->getVectorPair(i.first,true);
             total_seqs[myTarget->chrNumber()-1].push_back(insert);
             delete myTarget;
         }
     }
     for (int i=0; i<numChromosomes; i++) {
         std::cout << "sorting " << "scaffold or chromosome: " << i << "..." << std::endl;
+        //sort in descending order so that deletion of objects does not result in reindexing of array
         std::sort(total_seqs[i].begin(), total_seqs[i].end());
         std::cout << "done sorting." << std::endl;
     }

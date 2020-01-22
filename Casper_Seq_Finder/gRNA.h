@@ -21,31 +21,31 @@ public:
     ~gRNA();
     
 public:
-    unsigned long insertSequence(long, int, int, bool, bool, std::string, int);  //returns the seed sequence to the map after processing
+    unsigned long insertSequence(long, int, int, bool, bool, std::string, int, int);  //returns the seed sequence to the map after processing
     long getLocation() {return PAMlocation;} // the negative refers to the strand direction +/-: sense/anti-sense
     std::string getHypLoc();
     std::string getHypTail();
     std::string getHypPam();
-    std::pair<unsigned long, std::string> getVectorPair(unsigned long,bool);
+    std::pair<unsigned int, std::string> getVectorPair(unsigned int,bool);  //Seed sequence is capable of being 16 nucleotides in this iteration
     int chrNumber() {return Chromosome;}
     
-    std::string baseConvert(unsigned long long, int);
+    std::string baseConvert(unsigned long, int);
     
     std::string getScore() {return baseConvert(OnScore,64);}
 
     
 private:
-    unsigned int tailSeq; // capable of storing a 8 nucleotide sequence (probably will only use half)
-    unsigned int pamSeq; // capable of storing an 8 nucleotide PAM sequence
+    unsigned int tailSeq; // capable of storing a 16 nucleotide sequence
+    unsigned short pamSeq; // capable of storing an 8 nucleotide PAM sequence
     long PAMlocation;
-    int Chromosome;
-    int Pamsize;
+    unsigned short Chromosome;
+    short Pamsize;
     bool Anti;
-    int SeedLength;
-    int OnScore;
+    short SeedLength;
+    short OnScore;
     
 private:
-    std::string decompressSeq(unsigned long, int);
+    std::string decompressSeq(unsigned int, int);
     unsigned long compressSeq(std::string);
     int convertCharBase4(char);
     char convertBase4toChar(int);
