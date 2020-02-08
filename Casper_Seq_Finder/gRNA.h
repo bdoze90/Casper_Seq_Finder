@@ -21,7 +21,7 @@ public:
     ~gRNA();
     
 public:
-    unsigned long insertSequence(long, int, int, bool, bool, std::string, int, int);  //returns the seed sequence to the map after processing
+    unsigned long long insertSequence(long, int, int, bool, bool, std::string, int, int);  //returns the seed sequence to the map after processing
     long getLocation() {return PAMlocation;} // the negative refers to the strand direction +/-: sense/anti-sense
     std::string getHypLoc();
     std::string getHypTail();
@@ -46,7 +46,7 @@ private:
     
 private:
     std::string decompressSeq(unsigned int, int);
-    unsigned long compressSeq(std::string);
+    unsigned long long compressSeq(std::string);
     int convertCharBase4(char);
     char convertBase4toChar(int);
     

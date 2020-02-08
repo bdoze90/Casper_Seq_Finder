@@ -44,7 +44,7 @@ gRNA::~gRNA() {
  * that it can be stored in the Seed_Map of CrisprGroup for comparison to discover repeats.
  */
 
-unsigned long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, bool strand, std::string seq, int score, int seedsize) {
+unsigned long long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, bool strand, std::string seq, int score, int seedsize) {
     PAMlocation = index;
     if (!strand) {
         PAMlocation *= -1;
@@ -99,7 +99,7 @@ std::string gRNA::decompressSeq(unsigned int cseq, int exp_len) {
  * Special note: THIS PROCESS FLIPS THE STRING DIRECTION SO A SEQUENCE CAN BE READ PAM PROXIMAL TO PAM DISTAL
  */
 
-unsigned long gRNA::compressSeq(std::string s) {
+unsigned long long gRNA::compressSeq(std::string s) {
     unsigned long compseq;
     compseq = 0;
     for(int i=0; i<s.size(); i++) {
