@@ -196,7 +196,7 @@ char gRNA::convertBase4toChar(int i) {
  * Usage: Simple switch from a base10 to the base specified (will be called 64 in this class).
  */
 
-std::string gRNA::baseConvert(unsigned long number, int base) {
+std::string gRNA::baseConvert(unsigned long long number, int base) {
     std::string base64set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=/"; //base64 modification so +- can be used for strand direction
     std::string base32set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; //base32
     int rem;

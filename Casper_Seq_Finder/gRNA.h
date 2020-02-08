@@ -29,7 +29,7 @@ public:
     std::pair<unsigned int, std::string> getVectorPair(unsigned int,bool);  //Seed sequence is capable of being 16 nucleotides in this iteration
     int chrNumber() {return Chromosome;}
     
-    std::string baseConvert(unsigned long, int);
+    std::string baseConvert(unsigned long long, int);
     
     std::string getScore() {return baseConvert(OnScore,64);}
 
