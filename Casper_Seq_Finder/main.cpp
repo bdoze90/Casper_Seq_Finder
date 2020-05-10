@@ -31,13 +31,18 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main(int argc, const char * argv[]) {
     //int argc = 10;
-    //std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","scede","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPERinfo","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
-     string pamname = argv[1];
-     string pam = argv[2];
-     string OrgCode = argv[3];
-     string returnPath = argv[5];
+    //std::vector<std::string> argv = {"Executable","TRUE","saCas9","NNGRRT","scede","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPERinfo","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
+     string pamname = argv[2];
+    bool repeats = false;
+    string r = string(argv[1]);
+    if (r == "TRUE") {
+        repeats = true;
+    }
+     string pam = argv[3];
+     string OrgCode = argv[4];
+     string returnPath = argv[6];
      bool anti = false;
-     string a = string(argv[4]);
+     string a = string(argv[5]);
      if (a == "TRUE") {
      anti = true;
      }

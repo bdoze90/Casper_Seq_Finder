@@ -108,7 +108,8 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
 /* Function: addToMap
  * --------------------------------------------------------------------------------------------------------
  * Usage: Checks to see if the base10 unsigned long passed into the function has already been seen by
- * comparing against the Seed_Map where all the seeds that have been seen before are stored. This
+ * comparing against the Seed_Map where all the seeds that have been seen before are stored.  This function
+ * will only add gRNA objects to the "unique seeds" vector if the user has selected not to analyze for repeats.
  */
 
 void CrisprGroup::addToMap(unsigned int seed, gRNA* obj) {
@@ -123,6 +124,16 @@ void CrisprGroup::addToMap(unsigned int seed, gRNA* obj) {
     } else {
         Seed_Map[seed].push_back(obj);
     }
+}
+
+/* Function: addNonRepeats
+ * -------------------------------------------------------------------------------------------------------
+ * Usage: This function replaces the addToMap function for when repeats do not need to be analyzed and
+ * can therefore be added straight to the total vector storage vector.
+ */
+
+void CrisprGroup::addNonRepeats(unsigned int seed, gRNA* obj) {
+    //generates a
 }
 
 
@@ -145,7 +156,8 @@ int CrisprGroup::charToInt(char c) {
  * ------------------------------------------------------------------------------------------------------
  * Usage: Takes the Seed_Map and sorts the sequences and their locations by chromosome buckets and into
  * a container for the non-unique sequences to be printed separately. Function deletes the Seed_Map at
- * the end to save memory during the program's execution.
+ * the end to save memory during the program's execution.  This function is not called when repeats are
+ * not analyzed.
  */
 
 void CrisprGroup::processTargets() {
@@ -176,6 +188,7 @@ void CrisprGroup::processTargets() {
     }
     Seed_Map.clear();
 }
+
 
 /* Function: totSize
  * ---------------------------------------------------------------------------------------------------
