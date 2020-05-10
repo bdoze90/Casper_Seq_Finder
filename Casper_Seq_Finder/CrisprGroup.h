@@ -31,6 +31,7 @@ public:
     void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr);
     void printSequences();
     void processTargets();  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
+    void processNoRepeats();
 private:
     std::string filename;
     int len_seed;

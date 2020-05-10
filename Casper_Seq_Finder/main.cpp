@@ -102,8 +102,11 @@ int main(int argc, const char * argv[]) {
         reverseSequence.shrink_to_fit();
         cout << "Chromosome " << j+1 << " complete." << endl;
     }
-
-    Genome->processTargets();
+    if (!repeats) {
+        Genome->processNoRepeats();
+    } else {
+        Genome->processTargets();
+    }
     cout << "Finished Locating All Cas9 target sequences" << endl;
     WriteFile Output;
     Output.inputStats(karystats, misc_notes);  // Load the statistics of the size of the chromosomes/scaffolds
