@@ -27,12 +27,11 @@
  * Creates a CrisprGroup object and initializes the variables to the appropriate values
  */
 
-CrisprGroup:: CrisprGroup(int num, std::string base, std::string org, int tot_length, int seed_length) {
+CrisprGroup:: CrisprGroup(unsigned long num, pamEval mypam, std::string base, std::string org, bool repeats) {
     sCur = NULL;
     numChromosomes = num;
     filename = base + "NAG_files/" + org + ".txt";  // why does this say NAG_files????
-    len_seq = tot_length;
-    len_seed = seed_length;
+    CGPam = mypam;
 }
 
 /* Destructor: ~CrisprGroup
@@ -46,20 +45,34 @@ CrisprGroup::~CrisprGroup() {
     //erase all the gRNA objects created at the end of main. Iterate through all of them. This should already be done by processTargets.
 }
 
+/* Function: initiateTotalSeqs
+* --------------------------------------------------------------------------------------------------------
+* Initiate the total seqs vector so that it has allocated the appropriate vector memory.
+*/
+
+void CrisprGroup::initiateTotalSeqs() {
+    //Initiating the total_seqs vector:
+    for (int i=0; i<numChromosomes; i++) {
+        std::vector<std::pair<long, std::string>> newStorVec;
+        total_seqs.push_back(newStorVec);
+    }
+}
+
 /* Function: findPAMs
  * -------------------------------------------------------------------------------------------------------
- * Usage: A recursive function that goes through the entire sequence that was inputted by the user.  It
+ * Usage: A function that goes through the entire sequence that was inputted by the user.  It
  * finds all instances of "GG" which is the signal for a PAM sequence.  It then takes that location and
  * makes a new instance of gRNA in which the sequence is placed into to fill the data of the object.
  */
 
-void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file) {
+void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, bool on,std::string score_file) {
     //Scoring algorithm initialization:
     Scoring scoring(score_file);
-    int pamsize = p.length();
     // PAM sequence search initialization
     pamEval pe;
-    std::regex pam (pe.regexPAM(p));
+    short pamsize = pe.pam.length();
+    short fulllen = pe.fulllen();
+    std::regex pam (pe.regexPAM());
     std::smatch m;
     auto begin = std::sregex_iterator(s.begin(), s.end(), pam);
     auto end = std::sregex_iterator();
@@ -74,8 +87,66 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
             std::string fullseq;
             unsigned long seed;
             long j = m_pos;
+            if(!strand) { // Reverse strand detection for appropriate location indexing on output
+                j = s.length()-(m_pos+1);
+            }
+            int score;
+            if (pe.directionality) {
+                fullseq = s.substr(m_pos,fulllen+pamsize);
+                //scoring the full sequence including PAM and flanking regions
+                score = scoring.calcScore(s.substr(m_pos-4,pamsize+fulllen));
+                //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
+                if (fullseq.length() < pe.fulllen()) {
+                    break;
+                }
+                seed = sequence->insertSequence(j,chrm,pamsize,dir,fullseq,score,len_seed);
+            } else {
+                fullseq = s.substr(m_pos-fulllen,fulllen+pamsize);
+                //scoring the full sequence including PAM and flanking regions
+                score = scoring.calcScore(s.substr(m_pos-fulllen,fulllen));
+                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score,len_seed);
+            }
+            //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
+            addToMap(seed,sequence);
+        }
+        //Reporter for how much of the sequence has been searched.
+        if (m_pos%10000 == 0) {
+            std::cout << m_pos << " Positions searched." << endl;
+        }
+        
+    }
+}
+
+/* Function: findPAMs_notRepeats
+ * -------------------------------------------------------------------------------------------------------
+ * Usage: Function that goes through the entire sequence and finds instances of the PAM sequence inputted.
+ * Stores directly into the total_seqs vector.
+ */
+
+void CrisprGroup::findPAMs_notRepeats(std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file) {
+    //Scoring algorithm initialization:
+    Scoring scoring(score_file);
+    int pamsize = p.length();
+    std::string dirstring = "+";
+    // PAM sequence search initialization
+    pamEval pe;
+    std::regex pam (pe.regexPAM());
+    std::smatch m;
+    auto begin = std::sregex_iterator(s.begin(), s.end(), pam);
+    auto end = std::sregex_iterator();
+    //searching the sequence for the PAM with the iterator
+    for (std::sregex_iterator i = begin; i != end; i++) {
+        std::smatch match = *i;
+        std::string mpam = match.str(1);
+        long m_pos = match.position();
+        
+        if (s.length()-10 > m_pos && m_pos > 30) { //checking to make sure you are not too close to the edge of the sequence
+            std::string fullseq;
+            unsigned long seed;
+            long j = m_pos;
             if(!dir) { // Reverse strand detection for appropriate location indexing on output
                 j = s.length()-(m_pos+1);
+                dirstring = "-";
             }
             int score;
             if (anti) {
@@ -86,15 +157,18 @@ void CrisprGroup::findPAMs (std::string &s, bool dir, int chrm, std::string p, b
                 if (fullseq.length() < len_seq) {
                     break;
                 }
-                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score,len_seed);
+                // insert: j,chrm,pamsize,anti,dir,fullseq,score;
+                std::string fullinsert = fullseq + dirstring + std::to_string(score);
+                //std::cout << j << "," << fullinsert << std::endl;
             } else {
                 fullseq = s.substr(m_pos-len_seq,len_seq+pamsize);
                 //scoring the full sequence including PAM and flanking regions
                 score = scoring.calcScore(s.substr(m_pos-len_seq,len_seq));
-                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score,len_seed);
+                // insert: j,chrm,pamsize,anti,dir,fullseq,score;
+                std::string fullinsert = fullseq + dirstring + std::to_string(score);
+                //std::cout << j << "," << fullinsert << std::endl;
             }
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
-            addToMap(seed,sequence);
         }
         //Reporter for how much of the sequence has been searched.
         if (m_pos%10000 == 0) {
@@ -126,17 +200,6 @@ void CrisprGroup::addToMap(unsigned int seed, gRNA* obj) {
     }
 }
 
-/* Function: addNonRepeats
- * -------------------------------------------------------------------------------------------------------
- * Usage: This function replaces the addToMap function for when repeats do not need to be analyzed and
- * can therefore be added straight to the total vector storage vector.
- */
-
-void CrisprGroup::addNonRepeats(unsigned int seed, gRNA* obj) {
-    //generates a
-}
-
-
 /* Function: charToInt
  * -------------------------------------------------------------------------------------------------------
  * Usage: Takes in a character value representing a nucleotide and turns it into a representative integer
@@ -161,11 +224,6 @@ int CrisprGroup::charToInt(char c) {
  */
 
 void CrisprGroup::processTargets() {
-    //Initiating the total_seqs vector:
-    for (int i=0; i<numChromosomes; i++) {
-        std::vector<std::pair<long, std::string>> newStorVec;
-        total_seqs.push_back(newStorVec);
-    }
     //Iterating across the Seed_Map:
     for (const auto &i : Seed_Map) {
         if (i.second.size() != 1) { //If the sequence is non-unique
@@ -211,12 +269,68 @@ unsigned long CrisprGroup::totSize() {
  * will return a compressed (base64) string that contains the location and sequence in that order.
  */
 
-std::string CrisprGroup::nextUnique(int chr, long index) {
+std::string CrisprGroup::nextUnique(int chr, long index, bool compressed) {
     std::pair<long, std::string> current = total_seqs[chr][index];
-    gRNA gRNA;
-    std::string loc = gRNA.baseConvert(current.first, 64);
-    std::string element = loc + "," + current.second;
-    return element;
+    if (compressed) {
+        std::string loc = baseConvert(current.first, 64);
+        std::string element = loc + "," + current.second;
+        return element;
+    } else {
+        std::string loc = std::to_string(current.first);
+        std::string element = loc + "," + current.second; //figure out the nconversion needed here
+        return element;
+    }
+    
+}
+
+/* Function: decompressSeq
+ * ---------------------------------------------------------------------------------------------------------
+ * Usage: Takes the stored sequence (which is compressed to base-10) and outputs it as its string of A,T,C,G.
+ * There is a problem with an Adenine in the first part of the seedSeq or tailSeq where it is not taken into
+ * account because of the fact that it is represented by a 0.  To remedy this, when the decompression occurs
+ * we need to make sure that if the decompression reveals a sequence shorter than the expected length, to add
+ * an A to the end.
+ */
+
+std::string CrisprGroup::decompressSeq(unsigned int cseq, int exp_len) {
+    std::string uncompressed;
+    //do the reverse binary transition from base-10 to base-4
+    while (cseq >= 4) {
+        int rem = cseq%4;
+        cseq = cseq/4;
+        uncompressed += convertBase4toChar(rem);
+    }
+    uncompressed += convertBase4toChar(cseq);
+    for (int i=uncompressed.size(); i<exp_len; i++) {
+        uncompressed += 'A';
+    }
+    return uncompressed;
+}
+
+
+/* Function: convertBase4toChar
+ * ---------------------------------------------------------------------------------------------------------
+ * Usage: Simple switch function, reverse of above.
+ */
+
+char CrisprGroup::convertBase4toChar(int i) {
+    std::string bfour = "ATCG";
+    return bfour[i];
+}
+
+/* PUBLIC Function: baseConvert(unsigned long long base10 number, int base output)
+ * ---------------------------------------------------------------------------------------------------------
+ * Usage: Simple switch from a base10 to the base specified.
+ */
+
+std::string CrisprGroup::baseConvert(unsigned long long number, int base) {
+    int rem;
+    std::string newNum;
+    while(number>=base) {
+        rem = number%base;
+        number = number/base;
+    }
+    return newNum; //this returns the string in reverse...
 }
 
 

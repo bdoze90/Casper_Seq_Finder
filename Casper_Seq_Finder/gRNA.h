@@ -23,32 +23,23 @@ public:
 public:
     unsigned long long insertSequence(long, int, int, bool, bool, std::string, int, int);  //returns the seed sequence to the map after processing
     long getLocation() {return PAMlocation;} // the negative refers to the strand direction +/-: sense/anti-sense
-    std::string getHypLoc();
-    std::string getHypTail();
-    std::string getHypPam();
-    std::pair<unsigned int, std::string> getVectorPair(unsigned int,bool);  //Seed sequence is capable of being 16 nucleotides in this iteration
+    unsigned int getHead() {return headSeq;}
+    unsigned int getTail() {return tailSeq;}
+    unsigned short getPam() {return pamSeq;}
     int chrNumber() {return Chromosome;}
-    
-    std::string baseConvert(unsigned long long, int);
-    
-    std::string getScore() {return baseConvert(OnScore,64);}
+    short getScore() {return OnScore;}
 
     
 private:
+    unsigned long long compressSeq(std::string);
+    int convertCharBase4(char);
     unsigned int tailSeq; // capable of storing a 16 nucleotide sequence
+    unsigned int headSeq; // capable of storing a 16 nucleotide sequence
     unsigned short pamSeq; // capable of storing an 8 nucleotide PAM sequence
     long PAMlocation;
     unsigned short Chromosome;
-    short Pamsize;
     bool Anti;
-    short SeedLength;
     short OnScore;
-    
-private:
-    std::string decompressSeq(unsigned int, int);
-    unsigned long long compressSeq(std::string);
-    int convertCharBase4(char);
-    char convertBase4toChar(int);
     
 };
 

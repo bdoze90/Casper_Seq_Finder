@@ -7,11 +7,14 @@
 //
 
 #include <iostream>
+#include <fstream>
+#include <cstdio>
 #include <ctime>
 #include "Read.h"
 #include <string.h>
 #include <vector>
 #include <set>
+#include "pameval.h"
 #include "gRNA.h"
 #include "CrisprGroup.h"
 #include "set.h"
@@ -29,37 +32,40 @@ string toCapitals(string &str); //takes the string to all capitals
 
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
-int main(int argc, const char * argv[]) {
+int main() {
     //int argc = 10;
-    //std::vector<std::string> argv = {"Executable","TRUE","saCas9","NNGRRT","scede","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPERinfo","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
-     string pamname = argv[2];
+    std::vector<std::string> argv = {"Executable","spCas9","NGG", "FALSE", "0","16","4","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Dropbox/eco.fna", "Escherichia coli", "notes_go_here"};
+    pamEval P;
+    P.PAMID = argv[1];
+    P.pam = argv[2];
+    if (string(argv[3]) == "TRUE") {
+        P.directionality = true;
+    } else {
+        P.directionality = false;
+    }
+    P.head = stoi(string(argv[4]));
+    P.seed = stoi(string(argv[5]));
+    P.tail = stoi(string(argv[6]));
+    
     bool repeats = false;
     string r = string(argv[1]);
     if (r == "TRUE") {
         repeats = true;
     }
-     string pam = argv[3];
-     string OrgCode = argv[4];
-     string returnPath = argv[6];
-     bool anti = false;
-     string a = string(argv[5]);
-     if (a == "TRUE") {
-     anti = true;
-     }
-    string genome_name = string(argv[8]);
-    int clen = std::stoi(string(argv[9]));
-    int slen = std::stoi(string(argv[10]));
-    string misc_notes = string(argv[11]);
+    string OrgCode = argv[4];
+    string returnPath = argv[6];
+    string genome_name = string(argv[9]);
+    string misc_notes = string(argv[12]);
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
     start = std::clock();
-    string output_file = OrgCode + "_" + pamname;
+    string output_file = OrgCode + "_" + P.PAMID;
     Read read;
-    read.setFileName(argv[7]);
-    std::cout << "Opening fasta-type file: " << argv[7] << std::endl;
+    read.setFileName(argv[8]);
+    std::cout << "Opening fasta-type file: " << argv[8] << std::endl;
     read.openFile();
-    std::string score_file = argv[6];
+    std::string score_file = argv[7];
     //input sequences need to be a vector...
     vector<string> inputSequences;
     string newseq = "";
@@ -77,36 +83,47 @@ int main(int argc, const char * argv[]) {
             newseq += line; //THIS ACCOMODATES UP TO A 100000000 NUCLEOTIDE LINE
         }
     }
-    std::cout << "Finished reading in the genome file.\n";
+    std::cout << "Finished reading in the subgenomic file.\n";
     //Container for holding the statistics of the fasta for the end:
     std::vector<int> karystats;
     //fixes the off by one of the input sequences:
     inputSequences.push_back(newseq);
     newseq.clear();
-    std::cout << inputSequences.size() << endl;
-    CrisprGroup *Genome = new CrisprGroup(inputSequences.size(), returnPath, OrgCode,clen,slen);
+    std::cout << "Number of Chromosomes/Scaffolds: " << inputSequences.size() << endl;
+    CrisprGroup *Genome = new CrisprGroup(inputSequences.size(), P, returnPath, OrgCode, repeats);
     //Beginning of the for loop that iterates through the Fasta file to find targets
-    std::cout << "Processing the genome for " << pamname << " target sequences.\n";
+    std::cout << "Processing the genome for " << P.PAMID << " target sequences.\n";
+    Genome->initiateTotalSeqs();
     for (int j=0; j<inputSequences.size(); j++) {
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
         karystats.push_back(chromosomeSequence.size());
-        Genome->findPAMs(chromosomeSequence, true, j, pam, true, anti, score_file);
+        if (repeats) {
+            Genome->findPAMs(chromosomeSequence, true, j, score_file);
+        } else {
+            cout << "Ignoring 'repeats comparison" << endl;
+            Genome->findPAMs_notRepeats(chromosomeSequence, true, j, score_file);
+        }
         string reverseSequence;
         reverseSequence = reverseComplement(chromosomeSequence);
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
-        Genome->findPAMs(reverseSequence, false, j, pam, true, anti, score_file);
+        if (repeats) {
+            Genome->findPAMs(reverseSequence, false, true, j, score_file);
+        } else {
+            cout << "Ignoring repeats comparison" << endl;
+            Genome->findPAMs_notRepeats(reverseSequence, false, j, score_file);
+        }
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
         cout << "Chromosome " << j+1 << " complete." << endl;
     }
-    if (!repeats) {
-        Genome->processNoRepeats();
-    } else {
+    if (repeats) {
         Genome->processTargets();
     }
+    std::remove(argv[8].c_str());
+    cout << "Deleted temporary file" << endl;
     cout << "Finished Locating All Cas9 target sequences" << endl;
     WriteFile Output;
     Output.inputStats(karystats, misc_notes);  // Load the statistics of the size of the chromosomes/scaffolds

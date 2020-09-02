@@ -14,16 +14,26 @@
 
 class pamEval {
 public:
-    std::string regexPAM(std::string p) {
+    std::string PAMID;
+    std::string pam;
+    short head;
+    short tail;
+    short seed;
+    bool directionality;
+public:
+    short fulllen () {
+        return head + seed + tail;
+    };
+    std::string regexPAM() {
         std::string retpam = "(?=(";  //initializes lookahead structure
         // Iterate across the pam and generate regex characters for degenerates
-        for(int i=0;i<p.size();i++) {
-            if (p[i] == 'N') {
+        for(int i=0;i<pam.size();i++) {
+            if (pam[i] == 'N') {
                 retpam += '.';
-            } else if (p[i] == 'A' || p[i] == 'T' || p[i] == 'C' || p[i] == 'G') {
-                retpam += p[i];
+            } else if (pam[i] == 'A' || pam[i] == 'T' || pam[i] == 'C' || pam[i] == 'G') {
+                retpam += pam[i];
             } else {
-                retpam += degenerateRegex(p[i]);
+                retpam += degenerateRegex(pam[i]);
             }
         }
         // finish the lookahead regex structure:

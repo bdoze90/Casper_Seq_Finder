@@ -42,12 +42,14 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
         outputfile << cs[i] << " (" << i+1 << ")" << "\n";
         // Loop counter is in the correct direction (positive to file).
         for (int j=0; j<genome->Size(i); j++) {
-            current = genome->nextUnique(i,j);
+            current = genome->nextUnique(i,j,true);
             outputfile << current << "\n";
         }
     }
+    outputfile << "END_OF_FILE";
     //retrieving the repeated sequences
-    outputfile << "REPEATS" << "\n";
+    repeatfile.open(filename + "_repeats");
+    repeatfile << "REPEATS" << "\n";
     gRNA grna;
     std::pair<unsigned long, std::vector<gRNA*>> newSet;
     for (int j=0;j<genome->repSize();j++) {
@@ -59,22 +61,21 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
             outputfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
             delete newSet.second.at(i);
         }
-        outputfile << "\n";
+        repeatfile << "\n";
     }
-    outputfile << "END_OF_FILE";
 }
 
 void WriteFile::inputData(gRNA* g) {
-    sequence = g->getHypTail();
+    //sequence = convert(seed
     chromosome = g->chrNumber();
-    std::string pam = g->getHypPam();
+    std::string pam = std::to_string(g->getPam());
     if (g->getLocation() < 0) {
         sequence += "-" + pam;
     } else {
         sequence += "+" + pam;
     }
     score = g->getScore();
-    position = g->getHypLoc();
+    position = g->getLocation();
 }
 
 /*void WriteFile::printInfo(CrisprGroup* genome) {
@@ -83,9 +84,27 @@ void WriteFile::inputData(gRNA* g) {
  for (int i =1; i <= chromosomeseqcount.size(); i++) {
  outputfile << "There are " << chromosomeseqcount[i] << " unique sequences on Chromosome " << i << "\n";
  }
- 
- 
  }*/
+
+/* Function: decompress
+ * -------------------------------------------------------------------------------------------------------
+ * Usage: Takes in a long long object representing a DNA sequence and turns it into a string for printing
+ */
+std::string WriteFile::decompress(unsigned long long cseq, short exp_len) {
+    std::string uncompressed;
+    //do the reverse binary transition from base-10 to base-4
+    while (cseq >= 4) {
+        int rem = cseq%4;
+        cseq = cseq/4;
+        uncompressed += convertBase4toChar(rem);
+    }
+    uncompressed += convertBase4toChar(cseq);
+    for (int i=uncompressed.size(); i<exp_len; i++) {
+        uncompressed += 'A';
+    }
+    return uncompressed;
+}
+
 
 /* Function: charToInt
  * -------------------------------------------------------------------------------------------------------
@@ -100,5 +119,15 @@ int WriteFile::charToInt(char c) {
         case 'G': return 3;
         default: return 0;
     }
+}
+
+/* Function: convertBase4toChar
+ * ---------------------------------------------------------------------------------------------------------
+ * Usage: Simple switch function, reverse of above.
+ */
+
+char WriteFile::convertBase4toChar(int i) {
+    std::string bfour = "ATCG";
+    return bfour[i];
 }
 

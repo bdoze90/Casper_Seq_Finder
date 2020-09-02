@@ -33,12 +33,14 @@ private:
     void inputData(gRNA* g);
     void entry();
     int charToInt(char c);
-    std::string compressSequence(std::string s);
+    char convertBase4toChar(int);
+    std::string decompress(unsigned long long, short);
 private:
     string filename;
     string chr_stats_str;
     string mystats;
     ofstream outputfile;
+    ofstream repeatfile;
     int chromosome;
     std::string position;
     char strand;
