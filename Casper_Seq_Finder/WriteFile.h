@@ -17,6 +17,7 @@
 #include <ctype.h>
 #include "CrisprGroup.h"
 #include "gRNA.h"
+#include "pameval.h"
 
 using namespace std;
 
@@ -27,15 +28,15 @@ public:
 public:
     void inputStats(std::vector<int>,std::string);
     void setFileName(string, string);
-    void retrieveData(CrisprGroup*,std::vector<std::string>);
-    void printInfo(CrisprGroup*);
+    void retrieveData(CrisprGroup*,std::vector<std::string>, bool repeats);
 private:
-    void inputData(gRNA* g);
+    void inputRepeatData(gRNA* g);
     void entry();
     int charToInt(char c);
     char convertBase4toChar(int);
-    std::string decompress(unsigned long long, short);
+    std::string decompressSeq(unsigned long long, short);
 private:
+    pamEval PAMstat;
     string filename;
     string chr_stats_str;
     string mystats;

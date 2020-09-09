@@ -65,10 +65,60 @@ void CrisprGroup::initiateTotalSeqs() {
  * makes a new instance of gRNA in which the sequence is placed into to fill the data of the object.
  */
 
-void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, bool on,std::string score_file) {
+void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, std::string score_file) {
     //Scoring algorithm initialization:
     Scoring scoring(score_file);
     // PAM sequence search initialization
+    short pamsize = PAMstat.pam.length();
+    short fulllen = PAMstat.fulllen();
+    std::regex pam (PAMstat.regexPAM());
+    std::smatch m;
+    auto begin = std::sregex_iterator(s.begin(), s.end(), pam);
+    auto end = std::sregex_iterator();
+    //searching the sequence for the PAM with the iterator
+    for (std::sregex_iterator i = begin; i != end; i++) {
+        std::smatch match = *i;
+        std::string mpam = match.str(1);
+        long m_pos = match.position();
+        
+        if (s.length()-10 > m_pos && m_pos > 30) { //checking to make sure you are not too close to the edge of the sequence
+            gRNA* sequence = new gRNA;
+            std::string fullseq;
+            unsigned long seed;
+            long j = m_pos;
+            if(!strand) { // Reverse strand detection for appropriate location indexing on output
+                j = s.length()-(m_pos+1);
+            }
+            if (PAMstat.directionality) {
+                fullseq = s.substr(m_pos,fulllen+pamsize);
+                //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
+                if (fullseq.length() < PAMstat.fulllen()) {
+                    break;
+                }
+            } else {
+                fullseq = s.substr(m_pos-fulllen,fulllen+pamsize);
+            }
+            seed = sequence->insertSequence(j,chrm,pamsize,strand,fullseq,scoring.calcScore(fullseq),PAMstat.fivesize,PAMstat.seedsize,PAMstat.threesize);
+            //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
+            addToMap(seed,sequence,true);
+        }
+        //Reporter for how much of the sequence has been searched.
+        if (m_pos%10000 == 0) {
+            std::cout << m_pos << " Positions searched." << endl;
+        }
+        
+    }
+}
+
+/* Function: findPAMs_notRepeats
+ * -------------------------------------------------------------------------------------------------------
+ * Usage: Function that goes through the entire sequence and finds instances of the PAM sequence inputted.
+ * Stores directly into the total_seqs vector.
+ */
+
+void CrisprGroup::findPAMs_notRepeats(std::string &s, bool strand, int chrm, std::string score_file) {
+    //Scoring algorithm initialization:
+    Scoring scoring(score_file);
     pamEval pe;
     short pamsize = pe.pam.length();
     short fulllen = pe.fulllen();
@@ -90,85 +140,19 @@ void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, bool on,std::
             if(!strand) { // Reverse strand detection for appropriate location indexing on output
                 j = s.length()-(m_pos+1);
             }
-            int score;
             if (pe.directionality) {
                 fullseq = s.substr(m_pos,fulllen+pamsize);
-                //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-4,pamsize+fulllen));
                 //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
                 if (fullseq.length() < pe.fulllen()) {
                     break;
                 }
-                seed = sequence->insertSequence(j,chrm,pamsize,dir,fullseq,score,len_seed);
             } else {
                 fullseq = s.substr(m_pos-fulllen,fulllen+pamsize);
-                //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-fulllen,fulllen));
-                seed = sequence->insertSequence(j,chrm,pamsize,anti,dir,fullseq,score,len_seed);
             }
+            seed = sequence->insertSequence(j,chrm,pamsize,strand,fullseq,scoring.calcScore(fullseq),pe.fivesize,pe.seedsize,pe.threesize);
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
-            addToMap(seed,sequence);
-        }
-        //Reporter for how much of the sequence has been searched.
-        if (m_pos%10000 == 0) {
-            std::cout << m_pos << " Positions searched." << endl;
-        }
-        
-    }
-}
-
-/* Function: findPAMs_notRepeats
- * -------------------------------------------------------------------------------------------------------
- * Usage: Function that goes through the entire sequence and finds instances of the PAM sequence inputted.
- * Stores directly into the total_seqs vector.
- */
-
-void CrisprGroup::findPAMs_notRepeats(std::string &s, bool dir, int chrm, std::string p, bool on, bool anti,std::string score_file) {
-    //Scoring algorithm initialization:
-    Scoring scoring(score_file);
-    int pamsize = p.length();
-    std::string dirstring = "+";
-    // PAM sequence search initialization
-    pamEval pe;
-    std::regex pam (pe.regexPAM());
-    std::smatch m;
-    auto begin = std::sregex_iterator(s.begin(), s.end(), pam);
-    auto end = std::sregex_iterator();
-    //searching the sequence for the PAM with the iterator
-    for (std::sregex_iterator i = begin; i != end; i++) {
-        std::smatch match = *i;
-        std::string mpam = match.str(1);
-        long m_pos = match.position();
-        
-        if (s.length()-10 > m_pos && m_pos > 30) { //checking to make sure you are not too close to the edge of the sequence
-            std::string fullseq;
-            unsigned long seed;
-            long j = m_pos;
-            if(!dir) { // Reverse strand detection for appropriate location indexing on output
-                j = s.length()-(m_pos+1);
-                dirstring = "-";
-            }
-            int score;
-            if (anti) {
-                fullseq = s.substr(m_pos,len_seq+pamsize);
-                //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-4,pamsize+len_seq));
-                //Double check to make sure the sequence is not to close to the edge so as to not get a sequence
-                if (fullseq.length() < len_seq) {
-                    break;
-                }
-                // insert: j,chrm,pamsize,anti,dir,fullseq,score;
-                std::string fullinsert = fullseq + dirstring + std::to_string(score);
-                //std::cout << j << "," << fullinsert << std::endl;
-            } else {
-                fullseq = s.substr(m_pos-len_seq,len_seq+pamsize);
-                //scoring the full sequence including PAM and flanking regions
-                score = scoring.calcScore(s.substr(m_pos-len_seq,len_seq));
-                // insert: j,chrm,pamsize,anti,dir,fullseq,score;
-                std::string fullinsert = fullseq + dirstring + std::to_string(score);
-                //std::cout << j << "," << fullinsert << std::endl;
-            }
-            //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
+            // Transfer objects straight to the output vector to avoid sorting:
+            addToMap(seed,sequence,false);
         }
         //Reporter for how much of the sequence has been searched.
         if (m_pos%10000 == 0) {
@@ -186,17 +170,21 @@ void CrisprGroup::findPAMs_notRepeats(std::string &s, bool dir, int chrm, std::s
  * will only add gRNA objects to the "unique seeds" vector if the user has selected not to analyze for repeats.
  */
 
-void CrisprGroup::addToMap(unsigned int seed, gRNA* obj) {
-    //checking if the seed sequence has already been seen
-    std::unordered_map<unsigned int, std::vector<gRNA*>>::const_iterator got = Seed_Map.find(seed);
-    //if not found create a new map entry with the seed and new vector for storing any gRNA objects.
-    if (got == Seed_Map.end()) {
-        std::vector<gRNA*> locs;
-        locs.push_back(obj);
-        Seed_Map.emplace(seed,locs);
-    //if it already has been seen then just add it to the vector at that map key
+void CrisprGroup::addToMap(unsigned long seed, gRNA* obj, bool repeats) {
+    if (repeats) {
+        //checking if the seed sequence has already been seen
+        std::unordered_map<unsigned long, std::vector<gRNA*>>::const_iterator got = Seed_Map.find(seed);
+        //if not found create a new map entry with the seed and new vector for storing any gRNA objects.
+        if (got == Seed_Map.end()) {
+            std::vector<gRNA*> locs;
+            locs.push_back(obj);
+            Seed_Map.emplace(seed,locs);
+            //if it already has been seen then just add it to the vector at that map key
+        } else {
+            Seed_Map[seed].push_back(obj);
+        }
     } else {
-        Seed_Map[seed].push_back(obj);
+        total_seqs[obj->chrNumber()].push_back();
     }
 }
 
@@ -227,13 +215,19 @@ void CrisprGroup::processTargets() {
     //Iterating across the Seed_Map:
     for (const auto &i : Seed_Map) {
         if (i.second.size() != 1) { //If the sequence is non-unique
-            std::pair<unsigned int, std::vector<gRNA*>> insert = std::make_pair(i.first, i.second);
+            //unsigned int is the seed sequence and the gRNA pointer contains the rest of the info
+            std::pair<unsigned long, std::vector<gRNA*>> insert = std::make_pair(i.first, i.second);
             repeat_seqs.push_back(insert);
         } else { //If the sequence is unique
             gRNA* myTarget = i.second.at(0);
+            compgrna mystruct;
+            mystruct.cfive = myTarget->getFiveSeq();
+            mystruct.cthree = myTarget->getThreeSeq();
+            mystruct.cpam = myTarget->getPam();
+            mystruct.score = myTarget-> getScore();
+            mystruct.seed = i.first;
+            std::pair<unsigned long, compgrna> insert = std::make_pair(myTarget->getLocation(),mystruct);
             //string will contain whether the location is on the sense or antisense strand
-            //to generate the uncompressed sequence for debugging, set to false
-            std::pair<unsigned int, std::string> insert = myTarget->getVectorPair(i.first,true);
             total_seqs[myTarget->chrNumber()-1].push_back(insert);
             delete myTarget;
         }
@@ -269,18 +263,11 @@ unsigned long CrisprGroup::totSize() {
  * will return a compressed (base64) string that contains the location and sequence in that order.
  */
 
-std::string CrisprGroup::nextUnique(int chr, long index, bool compressed) {
-    std::pair<long, std::string> current = total_seqs[chr][index];
-    if (compressed) {
-        std::string loc = baseConvert(current.first, 64);
-        std::string element = loc + "," + current.second;
-        return element;
-    } else {
-        std::string loc = std::to_string(current.first);
-        std::string element = loc + "," + current.second; //figure out the nconversion needed here
-        return element;
-    }
-    
+std::string CrisprGroup::nextUnique(int chr, long index) {
+    std::pair <long, compgrna> cur = total_seqs[chr][index];
+    std::string output_element = std::to_string(cur.first) + ",";
+    output_element += decompressSeq(cur.second.cfive,PAMstat.fivesize) + decompressSeq(cur.second.seed,PAMstat.seedsize) + decompressSeq(cur.second.cthree,PAMstat.threesize) + "," + decompressSeq(cur.second.cpam,PAMstat.pam.size()) + "," + std::to_string(cur.second.score);
+    return output_element;
 }
 
 /* Function: decompressSeq
@@ -292,7 +279,7 @@ std::string CrisprGroup::nextUnique(int chr, long index, bool compressed) {
  * an A to the end.
  */
 
-std::string CrisprGroup::decompressSeq(unsigned int cseq, int exp_len) {
+std::string CrisprGroup::decompressSeq(unsigned long cseq, short exp_len) {
     std::string uncompressed;
     //do the reverse binary transition from base-10 to base-4
     while (cseq >= 4) {

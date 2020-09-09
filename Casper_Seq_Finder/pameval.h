@@ -16,13 +16,13 @@ class pamEval {
 public:
     std::string PAMID;
     std::string pam;
-    short head;
-    short tail;
-    short seed;
+    short fivesize;
+    short threesize;
+    short seedsize;
     bool directionality;
 public:
     short fulllen () {
-        return head + seed + tail;
+        return fivesize + seedsize + threesize;
     };
     std::string regexPAM() {
         std::string retpam = "(?=(";  //initializes lookahead structure

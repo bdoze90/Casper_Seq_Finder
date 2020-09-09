@@ -110,10 +110,10 @@ int main() {
         chromosomeSequence.clear();
         chromosomeSequence.shrink_to_fit();
         if (repeats) {
-            Genome->findPAMs(reverseSequence, false, true, j, score_file);
+            Genome->findPAMs(reverseSequence, false, j, score_file);
         } else {
             cout << "Ignoring repeats comparison" << endl;
-            Genome->findPAMs_notRepeats(reverseSequence, false, j, score_file);
+            Genome->findPAMs_notRepeats(reverseSequence,false, j, score_file);
         }
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
@@ -132,11 +132,11 @@ int main() {
     cout << "There were " << Genome->totSize() << " unique sequences." << endl;
     cout << "There were " << Genome->repSize() << " identical repeated sequences." << endl;
     cout << "Printing to file..." << endl;
-    Output.retrieveData(Genome,chromscaff);
+    Output.retrieveData(Genome,chromscaff,repeats);
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     cout << "Time Elapsed: " << duration/60 << " minutes \n";
     delete Genome;
-    cout << "Finished Creating File.\n To search restart CASPER and select Organism." << endl;
+    cout << "Finished Creating File.\n To search return to CASPER homepage and select " << genome_name << " to find targets." << endl;
     return 0;
 }
 

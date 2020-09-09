@@ -36,31 +36,39 @@ public:
 private:
     std::string filename;
 private:
-    void addToMap(unsigned int, gRNA*);
+    void addToMap(unsigned long, gRNA*,bool);
     int charToInt(char);
     static pamEval evaluate(std::string, bool);
     std::string compressSequence(std::string);
     gRNA* sCur;
     int numChromosomes;
     int curchrom;
-    pamEval CGPam;
+    pamEval PAMstat;
+    struct compgrna {
+        unsigned long seed;
+        unsigned int cfive;
+        unsigned int cthree;
+        short cpam;
+        short score;
+    };
 private:  // Functions for manipulating the output of the gRNA objects
-    std::string decompressSeq(unsigned int, int);
+    std::string decompressSeq(unsigned long, short);
     char convertBase4toChar(int);
     std::string baseConvert(unsigned long long, int);
     
 private:
-    std::unordered_map<unsigned int, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
-    std::vector<std::vector<std::pair<long, std::string>>> total_seqs; //sorted unique sequences
+    std::unordered_map<unsigned long, std::vector<gRNA*>> Seed_Map; //Stores all the potential target sites
+    std::vector<std::vector<std::pair<long, compgrna>>> total_seqs; //sorted unique sequences
     std::vector<std::pair<unsigned int, std::vector<gRNA*>>> repeat_seqs; //unsorted repeated sequences
     
 /* Stuff for iteration */
 public:
     int chrCount() {return numChromosomes;}
+    pamEval getPamEval() {return PAMstat;}
     unsigned long Size(int k) {return total_seqs.at(k).size();}
     unsigned long totSize();
     unsigned long repSize() {return repeat_seqs.size();}
-    std::string nextUnique(int, long, bool);
+    std::string nextUnique(int, long);
     std::pair<unsigned int, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
 };
 

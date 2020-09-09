@@ -30,8 +30,8 @@ gRNA::gRNA() {
 gRNA::~gRNA() {
     PAMlocation = 0;
     Chromosome = 0;
-    headSeq = 0;
-    tailSeq = 0;
+    fiveSeq = 0;
+    threeSeq = 0;
     //does there need to be any extra here i.e. deleting pointers?
 }
 
@@ -44,28 +44,24 @@ gRNA::~gRNA() {
  * that it can be stored in the Seed_Map of CrisprGroup for comparison to discover repeats.
  */
 
-unsigned long long gRNA::insertSequence(long index, int chr, int pamsize, bool anti, bool strand, std::string seq, int score, int seedsize) {
+unsigned long long gRNA::insertSequence(long index, int chr, int pamsize, bool strand, std::string seq, int score, short five, short seedsize, short three) {
     PAMlocation = index;
     if (!strand) {
         PAMlocation *= -1;
     }
     OnScore = score;
     Chromosome = chr+1; // this added 1 takes care of the indexing error and properly assigns chromosome number.
-    Anti = anti;  // !this needs to be judged when inputting tail and seed seqs unless taken care of somewhere else
-    /* The following code process the total sequence into multiple elements including the tailSeq, seedSeq, etc. */
-    std::string seed;
-    std::string tail;
-    std::string head;
-    if (!anti) {
-        pamSeq = compressSeq(seq.substr(seq.size()-pamsize,pamsize));
-        seed = seq.substr(seq.size()-pamsize-seedsize,seedsize);  // 16 is the maximum number of nucleotides able to be stored in unsigned long seed.
-        tailSeq = compressSeq(seq.substr(0,seq.size()-seedsize-pamsize));
+    /* The following code process the total sequence into multiple elements including the five prime and three prime sequences as well as the pam sequences. */
+    if (!Anti) {
+        pamSeq = compressSeq(seq.substr(five+seedsize+three,pamsize));
+        threeSeq = compressSeq(seq.substr(five+seedsize,three));
+        fiveSeq = compressSeq(seq.substr(0,five));
     } else {
         pamSeq = compressSeq(seq.substr(0,pamsize));
-        seed = seq.substr(pamsize,seedsize);
-        tailSeq = compressSeq(seq.substr(pamsize+seedsize));
+        fiveSeq = compressSeq(seq.substr(pamsize,five));
+        threeSeq = compressSeq(seq.substr(pamsize+five+seedsize,three));
     }
-    return compressSeq(seed);
+    return compressSeq(seq.substr(five,seedsize));
 }
 
 /* Function: compressSeq

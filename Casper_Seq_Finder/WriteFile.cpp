@@ -35,40 +35,43 @@ void WriteFile::setFileName(string fn, string genome_name) {
     outputfile << mystats << "\n";
 }
 
-void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs) {
+void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bool repeats) {
     //retrieving the unique sequences
     std::string current;
     for (int i=0;i<genome->chrCount();i++) {
         outputfile << cs[i] << " (" << i+1 << ")" << "\n";
         // Loop counter is in the correct direction (positive to file).
         for (int j=0; j<genome->Size(i); j++) {
-            current = genome->nextUnique(i,j,true);
+            current = genome->nextUnique(i,j);
             outputfile << current << "\n";
         }
     }
     outputfile << "END_OF_FILE";
-    //retrieving the repeated sequences
-    repeatfile.open(filename + "_repeats");
-    repeatfile << "REPEATS" << "\n";
-    gRNA grna;
-    std::pair<unsigned long, std::vector<gRNA*>> newSet;
-    for (int j=0;j<genome->repSize();j++) {
-        newSet = genome->nextRepeatSet(j);
-        string seed = grna.baseConvert(newSet.first, 64);
-        outputfile << seed << "\n";
-        for (int i=0; i<newSet.second.size(); i++) {
-            inputData(newSet.second.at(i));
-            outputfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
-            delete newSet.second.at(i);
+    //retrieving the repeated sequences if selected
+    if (repeats) {
+        //Get the pam evaluation information
+        pamEval pe = genome->getPamEval();
+        repeatfile.open(filename + "_repeats");
+        repeatfile << "REPEATS" << "\n";
+        std::pair<unsigned long, std::vector<gRNA*>> newSet;
+        for (int j=0;j<genome->repSize();j++) {
+            newSet = genome->nextRepeatSet(j);
+            string seed = decompressSeq(newSet.first,pe.seedsize);
+            outputfile << seed << "\n";
+            for (int i=0; i<newSet.second.size(); i++) {
+                inputRepeatData(newSet.second.at(i));
+                outputfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
+                delete newSet.second.at(i);
+            }
+            repeatfile << "\n";
         }
-        repeatfile << "\n";
     }
 }
 
-void WriteFile::inputData(gRNA* g) {
-    //sequence = convert(seed
+void WriteFile::inputRepeatData(gRNA* g) {
+    //sequence = convert(seed)
     chromosome = g->chrNumber();
-    std::string pam = std::to_string(g->getPam());
+    std::string pam = decompressSeq(g->getPam(),PAMstat.pam.size());
     if (g->getLocation() < 0) {
         sequence += "-" + pam;
     } else {
@@ -78,7 +81,7 @@ void WriteFile::inputData(gRNA* g) {
     position = g->getLocation();
 }
 
-/*void WriteFile::printInfo(CrisprGroup* genome) {
+/*void WriteFile::inputUniqueData(CrisprGroup* genome) {
  outputfile << "There are " << genome->Size() << " unique sequences across the genome. \n";
  outputfile << "There are" << genome->nagsize() << " NAG sequences across the genome. \n";
  for (int i =1; i <= chromosomeseqcount.size(); i++) {
@@ -90,7 +93,7 @@ void WriteFile::inputData(gRNA* g) {
  * -------------------------------------------------------------------------------------------------------
  * Usage: Takes in a long long object representing a DNA sequence and turns it into a string for printing
  */
-std::string WriteFile::decompress(unsigned long long cseq, short exp_len) {
+std::string WriteFile::decompressSeq(unsigned long long cseq, short exp_len) {
     std::string uncompressed;
     //do the reverse binary transition from base-10 to base-4
     while (cseq >= 4) {
