@@ -31,7 +31,7 @@ CrisprGroup:: CrisprGroup(unsigned long num, pamEval mypam, std::string base, st
     sCur = NULL;
     numChromosomes = num;
     filename = base + "NAG_files/" + org + ".txt";  // why does this say NAG_files????
-    CGPam = mypam;
+    PAMstat = mypam;
 }
 
 /* Destructor: ~CrisprGroup
@@ -53,7 +53,7 @@ CrisprGroup::~CrisprGroup() {
 void CrisprGroup::initiateTotalSeqs() {
     //Initiating the total_seqs vector:
     for (int i=0; i<numChromosomes; i++) {
-        std::vector<std::pair<long, std::string>> newStorVec;
+        std::vector<std::pair<long, compgrna>> newStorVec;
         total_seqs.push_back(newStorVec);
     }
 }
@@ -183,9 +183,9 @@ void CrisprGroup::addToMap(unsigned long seed, gRNA* obj, bool repeats) {
         } else {
             Seed_Map[seed].push_back(obj);
         }
-    } else {
+    } /*else {
         total_seqs[obj->chrNumber()].push_back();
-    }
+    }*/
 }
 
 /* Function: charToInt
@@ -235,10 +235,14 @@ void CrisprGroup::processTargets() {
     for (int i=0; i<numChromosomes; i++) {
         std::cout << "sorting " << "scaffold or chromosome: " << i << "..." << std::endl;
         //sort in descending order so that deletion of objects does not result in reindexing of array
-        std::sort(total_seqs[i].begin(), total_seqs[i].end());
+        std::sort(total_seqs[i].begin(), total_seqs[i].end(),pairCompare);
         std::cout << "done sorting." << std::endl;
     }
     Seed_Map.clear();
+}
+
+bool CrisprGroup::pairCompare(const std::pair<unsigned long, compgrna> i, const std::pair<unsigned long, compgrna> j) {
+    return i.first < j.first;
 }
 
 

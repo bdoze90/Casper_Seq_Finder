@@ -52,6 +52,7 @@ private:
         short score;
     };
 private:  // Functions for manipulating the output of the gRNA objects
+    static bool pairCompare(const std::pair<unsigned long, compgrna>, const std::pair<unsigned long, compgrna>);
     std::string decompressSeq(unsigned long, short);
     char convertBase4toChar(int);
     std::string baseConvert(unsigned long long, int);

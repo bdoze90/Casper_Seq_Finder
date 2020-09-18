@@ -34,7 +34,7 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main() {
     //int argc = 10;
-    std::vector<std::string> argv = {"Executable","spCas9","NGG", "FALSE", "0","16","4","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Dropbox/eco.fna", "Escherichia coli", "notes_go_here"};
+    std::vector<std::string> argv = {"Executable","spCas9","NGG", "FALSE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Dropbox/eco.fna", "Escherichia coli", "notes_go_here"};
     pamEval P;
     P.PAMID = argv[1];
     P.pam = argv[2];
@@ -43,9 +43,9 @@ int main() {
     } else {
         P.directionality = false;
     }
-    P.head = stoi(string(argv[4]));
-    P.seed = stoi(string(argv[5]));
-    P.tail = stoi(string(argv[6]));
+    P.fivesize = stoi(string(argv[4]));
+    P.seedsize = stoi(string(argv[5]));
+    P.threesize = stoi(string(argv[6]));
     
     bool repeats = false;
     string r = string(argv[1]);
