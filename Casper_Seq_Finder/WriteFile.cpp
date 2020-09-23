@@ -57,10 +57,10 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bo
         for (int j=0;j<genome->repSize();j++) {
             newSet = genome->nextRepeatSet(j);
             string seed = decompressSeq(newSet.first,pe.seedsize);
-            outputfile << seed << "\n";
+            repeatfile << seed << "\n";
             for (int i=0; i<newSet.second.size(); i++) {
                 inputRepeatData(newSet.second.at(i));
-                outputfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
+                repeatfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
                 delete newSet.second.at(i);
             }
             repeatfile << "\n";

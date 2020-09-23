@@ -34,38 +34,38 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main() {
     //int argc = 10;
-    std::vector<std::string> argv = {"Executable","spCas9","NGG", "FALSE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Dropbox/eco.fna", "Escherichia coli", "notes_go_here"};
+    std::vector<std::string> argv = {"Executable","spCas9","NGG", "TRUE", "TRUE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Dropbox/eco.fna", "Escherichia coli", "notes_go_here"};
     pamEval P;
     P.PAMID = argv[1];
     P.pam = argv[2];
-    if (string(argv[3]) == "TRUE") {
+    if (string(argv[4]) == "TRUE") {
         P.directionality = true;
     } else {
         P.directionality = false;
     }
-    P.fivesize = stoi(string(argv[4]));
-    P.seedsize = stoi(string(argv[5]));
-    P.threesize = stoi(string(argv[6]));
+    P.fivesize = stoi(string(argv[5]));
+    P.seedsize = stoi(string(argv[6]));
+    P.threesize = stoi(string(argv[7]));
     
     bool repeats = false;
-    string r = string(argv[1]);
+    string r = string(argv[3]);
     if (r == "TRUE") {
         repeats = true;
     }
-    string OrgCode = argv[4];
-    string returnPath = argv[6];
-    string genome_name = string(argv[9]);
-    string misc_notes = string(argv[12]);
+    string OrgCode = argv[8];
+    string returnPath = argv[9];
+    string genome_name = string(argv[12]);
+    string misc_notes = string(argv[13]);
     //end obtaining information from argv.
     std::clock_t start;
     double duration;
     start = std::clock();
     string output_file = OrgCode + "_" + P.PAMID;
     Read read;
-    read.setFileName(argv[8]);
-    std::cout << "Opening fasta-type file: " << argv[8] << std::endl;
+    read.setFileName(argv[11]);
+    std::cout << "Opening fasta-type file: " << argv[11] << std::endl;
     read.openFile();
-    std::string score_file = argv[7];
+    std::string score_file = argv[10];
     //input sequences need to be a vector...
     vector<string> inputSequences;
     string newseq = "";
@@ -83,7 +83,7 @@ int main() {
             newseq += line; //THIS ACCOMODATES UP TO A 100000000 NUCLEOTIDE LINE
         }
     }
-    std::cout << "Finished reading in the subgenomic file.\n";
+    std::cout << "Finished reading in the fasta file.\n";
     //Container for holding the statistics of the fasta for the end:
     std::vector<int> karystats;
     //fixes the off by one of the input sequences:
@@ -122,7 +122,7 @@ int main() {
     if (repeats) {
         Genome->processTargets();
     }
-    std::remove(argv[8].c_str());
+    //std::remove(argv[8].c_str());
     cout << "Deleted temporary file" << endl;
     cout << "Finished Locating All Cas9 target sequences" << endl;
     WriteFile Output;
