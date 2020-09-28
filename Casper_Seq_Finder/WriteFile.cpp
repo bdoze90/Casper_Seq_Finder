@@ -50,13 +50,13 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bo
     //retrieving the repeated sequences if selected
     if (repeats) {
         //Get the pam evaluation information
-        pamEval pe = genome->getPamEval();
+        PAMstat = genome->getPamEval();
         repeatfile.open(filename + "_repeats");
         repeatfile << "REPEATS" << "\n";
-        std::pair<unsigned long, std::vector<gRNA*>> newSet;
+        std::pair<unsigned int, std::vector<gRNA*>> newSet;
         for (int j=0;j<genome->repSize();j++) {
             newSet = genome->nextRepeatSet(j);
-            string seed = decompressSeq(newSet.first,pe.seedsize);
+            string seed = decompressSeq(newSet.first,PAMstat.seedsize);
             repeatfile << seed << "\n";
             for (int i=0; i<newSet.second.size(); i++) {
                 inputRepeatData(newSet.second.at(i));
@@ -69,16 +69,17 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bo
 }
 
 void WriteFile::inputRepeatData(gRNA* g) {
-    //sequence = convert(seed)
+    sequence = decompressSeq(g->getFiveSeq(), PAMstat.fivesize) + "-";
+    sequence += decompressSeq(g->getThreeSeq(), PAMstat.threesize);
     chromosome = g->chrNumber();
     std::string pam = decompressSeq(g->getPam(),PAMstat.pam.size());
-    if (g->getLocation() < 0) {
-        sequence += "-" + pam;
+    if (PAMstat.directionality) {
+        sequence = pam + "-" + sequence;
     } else {
-        sequence += "+" + pam;
+        sequence += "-" + pam;
     }
-    score = g->getScore();
-    position = g->getLocation();
+    score = std::to_string(g->getScore());
+    position = std::to_string(g->getLocation());
 }
 
 /*void WriteFile::inputUniqueData(CrisprGroup* genome) {
@@ -94,18 +95,22 @@ void WriteFile::inputRepeatData(gRNA* g) {
  * Usage: Takes in a long long object representing a DNA sequence and turns it into a string for printing
  */
 std::string WriteFile::decompressSeq(unsigned long long cseq, short exp_len) {
-    std::string uncompressed;
-    //do the reverse binary transition from base-10 to base-4
-    while (cseq >= 4) {
-        int rem = cseq%4;
-        cseq = cseq/4;
-        uncompressed += convertBase4toChar(rem);
+    // Goes through if statement because of an off by 1 error on a zero length sequence
+    if (exp_len > 0) {
+        std::string uncompressed;
+        //do the reverse binary transition from base-10 to base-4
+        while (cseq >= 4) {
+            int rem = cseq%4;
+            cseq = cseq/4;
+            uncompressed += convertBase4toChar(rem);
+        }
+        uncompressed += convertBase4toChar(cseq);
+        for (int i=uncompressed.size(); i<exp_len; i++) {
+            uncompressed += 'A';
+        }
+        return uncompressed;
     }
-    uncompressed += convertBase4toChar(cseq);
-    for (int i=uncompressed.size(); i<exp_len; i++) {
-        uncompressed += 'A';
-    }
-    return uncompressed;
+    return "";
 }
 
 
