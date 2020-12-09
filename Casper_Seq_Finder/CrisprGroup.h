@@ -22,6 +22,7 @@
 #include "foreach.h"
 #include "pameval.h"
 #include "Scoring.h"
+#include "RepStor.h"
 
 class CrisprGroup {
 public:

@@ -19,7 +19,7 @@
 #include "hashset.h"
 #include "hashmap.h"
 #include "foreach.h"
-
+#include "RepStor.h"
 
 /* Constructor: CrisprGroup
  * Usage: CrisprGroup crisprgroup;
@@ -103,9 +103,9 @@ void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, std::string s
             addToMap(seed,sequence,true);
         }
         //Reporter for how much of the sequence has been searched.
-        if (m_pos%10000 == 0) {
+        /*if (m_pos%10000 == 0) {
             std::cout << m_pos << " Positions searched." << endl;
-        }
+        }*/
         
     }
 }
@@ -155,9 +155,9 @@ void CrisprGroup::findPAMs_notRepeats(std::string &s, bool strand, int chrm, std
             addToMap(seed,sequence,false);
         }
         //Reporter for how much of the sequence has been searched.
-        if (m_pos%10000 == 0) {
+        /*if (m_pos%10000 == 0) {
             std::cout << m_pos << " Positions searched." << endl;
-        }
+        }*/
         
     }
 }
@@ -177,6 +177,7 @@ void CrisprGroup::addToMap(unsigned long seed, gRNA* obj, bool repeats) {
         //if not found create a new map entry with the seed and new vector for storing any gRNA objects.
         if (got == Seed_Map.end()) {
             std::vector<gRNA*> locs;
+            locs.reserve(2);
             locs.push_back(obj);
             Seed_Map.emplace(seed,locs);
             //if it already has been seen then just add it to the vector at that map key

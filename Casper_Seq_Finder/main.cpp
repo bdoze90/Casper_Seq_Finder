@@ -34,7 +34,7 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main() {
     //int argc = 10;
-    std::vector<std::string> argv = {"Executable","spCas9","NGG", "TRUE", "TRUE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Dropbox/eco.fna", "Escherichia coli", "notes_go_here"};
+    std::vector<std::string> argv = {"Executable","spCas9","NGG", "TRUE", "FALSE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Downloads/pde.fna", "Escherichia coli", "notes_go_here"};
     pamEval P;
     P.PAMID = argv[1];
     P.pam = argv[2];
@@ -117,7 +117,7 @@ int main() {
         }
         reverseSequence.clear();
         reverseSequence.shrink_to_fit();
-        cout << "Chromosome " << j+1 << " complete." << endl;
+        cout << "Chromosome/Scaffold " << j+1 << " complete." << endl;
     }
     if (repeats) {
         Genome->processTargets();

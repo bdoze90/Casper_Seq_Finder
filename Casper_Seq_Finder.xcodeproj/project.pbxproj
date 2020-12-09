@@ -28,6 +28,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		04A09154254336EA0061D984 /* RepStor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RepStor.h; sourceTree = "<group>"; };
 		04EB1EEB1CA766A4000391F1 /* Casper_Seq_Finder */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Casper_Seq_Finder; sourceTree = BUILT_PRODUCTS_DIR; };
 		04EB1EEE1CA766A4000391F1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		04EB1EF51CA766C4000391F1 /* gRNA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gRNA.cpp; sourceTree = "<group>"; };
@@ -85,6 +86,7 @@
 				04EB1EFE1CA766F5000391F1 /* WriteFile.cpp */,
 				04EB1EFF1CA766F5000391F1 /* WriteFile.h */,
 				04EB1F011CA766FF000391F1 /* pameval.h */,
+				04A09154254336EA0061D984 /* RepStor.h */,
 			);
 			path = Casper_Seq_Finder;
 			sourceTree = "<group>";
