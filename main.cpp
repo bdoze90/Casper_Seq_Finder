@@ -14,7 +14,6 @@
 #include <set>
 #include "gRNA.h"
 #include "CrisprGroup.h"
-#include "set.h"
 #include "WriteFile.h"
 using namespace std;
 
@@ -29,9 +28,11 @@ string toCapitals(string &str); //takes the string to all capitals
 
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
-int main(int argc, const char * argv[]) {
+//int main(int argc, const char * argv[]) {
+int main()
+{
     //int argc = 10;
-    //std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","scede","FALSE","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Desktop/CASPERinfo","/Users/brianmendoza/Dropbox/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
+	std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","scede","FALSE","C:/Users/Tfry/Desktop/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
      string pamname = argv[1];
      string pam = argv[2];
      string OrgCode = argv[3];

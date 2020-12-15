@@ -14,11 +14,6 @@
 #include "CrisprGroup.h"
 #include "Scoring.h"
 #include "gRNA.h"
-#include "set.h"
-#include "map.h"
-#include "hashset.h"
-#include "hashmap.h"
-#include "foreach.h"
 
 
 /* Constructor: CrisprGroup

@@ -13,13 +13,9 @@
 #include <fstream>
 #include <vector>
 #include <assert.h>
-#include "hashset.h"
-#include "hashmap.h"
 #include "gRNA.h"
-#include "set.h" //belongs to the StanfordCPPLibrary Copyright (c) Stanford University 2008.
 #include <map>
 #include <unordered_map>
-#include "foreach.h"
 #include "pameval.h"
 #include "Scoring.h"
 
