@@ -27,15 +27,18 @@ public:
     void findPAMs(std::string &s, bool, int, std::string pam, bool, bool, std::string scr);
     void printSequences();
     void processTargets();  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
+	int pam_length;
+	int len_seed;
+	int len_seq;
 private:
     std::string filename;
-    int len_seed;
-    int len_seq;
+    
 private:
     void addToMap(unsigned int, gRNA*);
     int charToInt(char);
     static pamEval evaluate(std::string, bool);
     std::string compressSequence(std::string);
+	char convertBase4toChar(int i);
     gRNA* sCur;
     int numChromosomes;
     int curchrom;
@@ -53,6 +56,10 @@ public:
     unsigned long repSize() {return repeat_seqs.size();}
     std::string nextUnique(int, long);
     std::pair<unsigned int, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
+	string decompress64(string seq, int length);
+	std::string decompressSeq(unsigned long cseq, short exp_len);
+	unsigned int decompress_ontarget(string base64seq);
+	string int2nt(int num);
 };
 
 

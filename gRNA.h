@@ -32,6 +32,10 @@ public:
     std::string baseConvert(unsigned long, int);
     
     std::string getScore() {return baseConvert(OnScore,64);}
+	unsigned long compressSeq(std::string);
+	int convertCharBase4(char);
+	char convertBase4toChar(int);
+	std::string decompressSeq(unsigned int, int);
 
     
 private:
@@ -43,13 +47,6 @@ private:
     bool Anti;
     short SeedLength;
     short OnScore;
-    
-private:
-    std::string decompressSeq(unsigned int, int);
-    unsigned long compressSeq(std::string);
-    int convertCharBase4(char);
-    char convertBase4toChar(int);
-    
 };
 
 

@@ -14,6 +14,8 @@
 #include "CrisprGroup.h"
 #include "Scoring.h"
 #include "gRNA.h"
+#include <stdlib.h>
+#include <math.h>
 
 
 /* Constructor: CrisprGroup
@@ -194,15 +196,143 @@ unsigned long CrisprGroup::totSize() {
  */
 
 std::string CrisprGroup::nextUnique(int chr, long index) {
-    std::pair<long, std::string> current = total_seqs[chr][index];
-    gRNA gRNA;
-    std::string loc = gRNA.baseConvert(current.first, 64);
-    std::string element = loc + "," + current.second;
-    return element;
+	std::pair<long, std::string> current = total_seqs[chr][index];
+	gRNA gRNA;
+	std::string loc = to_string(current.first);
+	string seq, pam, strand;
+	string ontarget;
+	int target;
+
+	//split current.second into seperate variables
+	string temp = current.second;	
+	if (temp.find('+') != string::npos)
+	{
+		strand = "+";
+		seq = temp.substr(0, temp.find('+'));
+		temp.erase(0, seq.length() + 1);
+		pam = temp.substr(0, temp.find(','));
+		temp.erase(0, pam.length() + 1);
+		ontarget = temp;
+	}
+	else
+	{
+		strand = "-";
+		seq = temp.substr(0, temp.find('-'));
+		temp.erase(0, seq.length() + 1);
+		pam = temp.substr(0, temp.find(','));
+		temp.erase(0, pam.length() + 1);
+		ontarget = temp;
+	}
+	
+	//decompress variables
+	seq = decompress64(seq, len_seq);
+	pam = decompress64(pam, pam_length);
+	target = decompress_ontarget(ontarget);
+	
+	//cout << loc << "," << seq << "," << pam << "," << target << "," << strand << endl;
+	
+	std::string element = loc + "," + seq + "," + pam + "," + to_string(target) + "," + strand;
+
+	return element;
+}
+
+std::string CrisprGroup::decompressSeq(unsigned long cseq, short exp_len) {
+	std::string uncompressed;
+	//do the reverse binary transition from base-10 to base-4
+	while (cseq >= 4) {
+		int rem = cseq % 4;
+		cseq = cseq / 4;
+		uncompressed += convertBase4toChar(rem);
+	}
+	uncompressed += convertBase4toChar(cseq);
+	for (int i = uncompressed.size(); i < exp_len; i++) {
+		uncompressed += 'A';
+	}
+	return uncompressed;
+}
+
+char CrisprGroup::convertBase4toChar(int i) {
+	std::string bfour = "ATCG";
+	return bfour[i];
+}
+
+string CrisprGroup::int2nt(int num)
+{
+	if (num == 0)
+	{
+		return "A";
+	}
+	else if (num == 1)
+	{
+		return "T";
+	}
+	else if (num == 2)
+	{
+		return "C";
+	}
+	else if (num == 3)
+	{
+		return "G";
+	}
+	else
+	{
+		return "N";
+	}
+}
+
+string CrisprGroup::decompress64(string base64seq, int length)
+{
+	unsigned long base10seq = 0;
+	string new_seq = "";
+	unsigned long number, power, index, rem;
+	string base_array_64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=/";
+	
+	for(int i = 0; i < base64seq.length(); i++)
+	{
+		power = base64seq.length() - (i + 1);
+		index = base_array_64.find(base64seq[i]);
+		if (index != string::npos)
+		{
+			base10seq += (index * (pow(64, power)));
+		}
+	}
+
+	number = base10seq;
+	while (number >= 4)
+	{
+		rem = number % 4;
+		number = unsigned long(number / 4);
+		new_seq += int2nt(rem);
+	}
+	new_seq += int2nt(number);
+	for (int i = new_seq.length(); i < length; i++)
+	{
+		new_seq += "A";
+	}
+
+	return new_seq;
 }
 
 
+unsigned int CrisprGroup::decompress_ontarget(string base64seq)
+{
+	unsigned long base10seq = 0;
+	string new_seq = "";
+	unsigned long number, power, index, rem;
+	string base_array_64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=/";
 
+	for (int i = 0; i < base64seq.length(); i++)
+	{
+		power = base64seq.length() - (i + 1);
+		index = base_array_64.find(base64seq[i]);
+		if (index != string::npos)
+		{
+			base10seq += (index * (pow(64, power)));
+		}
+	}
+
+	return base10seq;
+}
 
 
 

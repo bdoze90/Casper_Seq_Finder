@@ -28,13 +28,13 @@ string toCapitals(string &str); //takes the string to all capitals
 
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
-//int main(int argc, const char * argv[]) {
-int main()
+int main(int argc, const char * argv[]) {
+//int main()
 {
     //int argc = 10;
-	std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","scede","FALSE","C:/Users/Tfry/Desktop/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
+	//std::vector<std::string> argv = {"Executable","saCas9","NNGRRT","scede","FALSE","C:/Users/Tfry/Desktop/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/sce.fna", "Saccharomyces Cerevisiae S288C", "20", "16","notes_go_here"};
      string pamname = argv[1];
-     string pam = argv[2];
+     string pam = argv[2]; //pamlength = len(str)
      string OrgCode = argv[3];
      string returnPath = argv[5];
      bool anti = false;
@@ -43,8 +43,8 @@ int main()
      anti = true;
      }
     string genome_name = string(argv[8]);
-    int clen = std::stoi(string(argv[9]));
-    int slen = std::stoi(string(argv[10]));
+    int clen = std::stoi(string(argv[9])); //sequence length
+    int slen = std::stoi(string(argv[10])); //seed length
     string misc_notes = string(argv[11]);
     //end obtaining information from argv.
     std::clock_t start;
@@ -81,6 +81,7 @@ int main()
     newseq.clear();
     std::cout << inputSequences.size() << endl;
     CrisprGroup *Genome = new CrisprGroup(inputSequences.size(), returnPath, OrgCode,clen,slen);
+	Genome->pam_length = pam.length();
     //Beginning of the for loop that iterates through the Fasta file to find targets
     std::cout << "Processing the genome for " << pamname << " target sequences.\n";
     for (int j=0; j<inputSequences.size(); j++) {
@@ -113,7 +114,7 @@ int main()
     cout << "Time Elapsed: " << duration/60 << " minutes \n";
     delete Genome;
     cout << "Finished Creating File.\n To search restart CASPER and select Organism." << endl;
-    return 0;
+	return 0;
 }
 
 /* Function: toCapitals

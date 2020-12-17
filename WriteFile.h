@@ -17,6 +17,10 @@
 #include <ctype.h>
 #include "CrisprGroup.h"
 #include "gRNA.h"
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include "sqlite3.h"
 
 using namespace std;
 
