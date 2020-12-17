@@ -301,7 +301,7 @@ string CrisprGroup::decompress64(string base64seq, int length)
 	while (number >= 4)
 	{
 		rem = number % 4;
-		number = unsigned long(number / 4);
+		number = (unsigned long)(number / 4);
 		new_seq += int2nt(rem);
 	}
 	new_seq += int2nt(number);
