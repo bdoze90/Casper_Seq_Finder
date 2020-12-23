@@ -103,9 +103,9 @@ void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, std::string s
             addToMap(seed,sequence,true);
         }
         //Reporter for how much of the sequence has been searched.
-        /*if (m_pos%10000 == 0) {
+        if (m_pos%10000 == 0) {
             std::cout << m_pos << " Positions searched." << endl;
-        }*/
+        }
         
     }
 }
