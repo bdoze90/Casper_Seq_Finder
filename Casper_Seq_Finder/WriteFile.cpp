@@ -19,6 +19,7 @@ WriteFile::~WriteFile() {
 
 // See the setFileName function for incorporation of this data in the output file
 void WriteFile::inputStats(std::vector<int> kary, std::string misc) {
+    chromosomeseqcount = kary;
     chr_stats_str = "KARYSTATS: ";
     for (int i = 0; i<kary.size(); i++) {
         chr_stats_str += to_string(kary[i]) + ",";
@@ -37,13 +38,19 @@ void WriteFile::setFileName(string fn, string genome_name) {
 
 void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bool repeats) {
     //retrieving the unique sequences
-    std::string current;
+    std::pair<long,string> current;
     for (int i=0;i<genome->chrCount();i++) {
         outputfile << cs[i] << " (" << i+1 << ")" << "\n";
         // Loop counter is in the correct direction (positive to file).
         for (int j=0; j<genome->Size(i); j++) {
             current = genome->nextUnique(i,j);
-            outputfile << current << "\n";
+            if (current.first < 0) {
+                long outnum = (chromosomeseqcount[i] + current.first)*-1;
+                outputfile << outnum << ",";
+            } else {
+                outputfile << current.first << ",";
+            }
+            outputfile << current.second << "\n";
         }
     }
     outputfile << "END_OF_FILE";
@@ -60,7 +67,11 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bo
             repeatfile << seed << "\n";
             for (int i=0; i<newSet.second.size(); i++) {
                 inputRepeatData(newSet.second.at(i));
-                repeatfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
+                long newposition = stol(position);
+                if (newposition < 0) {
+                    newposition = (chromosomeseqcount[j] + newposition)*-1;
+                }
+                repeatfile << chromosome << "," << newposition << "," << sequence << "," << score << "\t";
                 delete newSet.second.at(i);
             }
             repeatfile << "\n";

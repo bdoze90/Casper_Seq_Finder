@@ -70,7 +70,7 @@ public:
     unsigned long Size(int k) {return total_seqs.at(k).size();}
     unsigned long totSize();
     unsigned long repSize() {return repeat_seqs.size();}
-    std::string nextUnique(int, long);
+    std::pair<long,std::string> nextUnique(int, long);
     std::pair<unsigned int, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
 };
 

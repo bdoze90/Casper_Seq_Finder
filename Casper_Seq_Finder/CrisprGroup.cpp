@@ -268,11 +268,13 @@ unsigned long CrisprGroup::totSize() {
  * will return a compressed (base64) string that contains the location and sequence in that order.
  */
 
-std::string CrisprGroup::nextUnique(int chr, long index) {
+std::pair<long, std::string> CrisprGroup::nextUnique(int chr, long index) {
     std::pair <long, compgrna> cur = total_seqs[chr][index];
-    std::string output_element = std::to_string(cur.first) + ",";
-    output_element += decompressSeq(cur.second.cfive,PAMstat.fivesize) + decompressSeq(cur.second.seed,PAMstat.seedsize) + decompressSeq(cur.second.cthree,PAMstat.threesize) + "," + decompressSeq(cur.second.cpam,PAMstat.pam.size()) + "," + std::to_string(cur.second.score);
-    return output_element;
+    std::string output_element = decompressSeq(cur.second.cfive,PAMstat.fivesize) + decompressSeq(cur.second.seed,PAMstat.seedsize) + decompressSeq(cur.second.cthree,PAMstat.threesize) + "," + decompressSeq(cur.second.cpam,PAMstat.pam.size()) + "," + std::to_string(cur.second.score);
+    std::pair<long,std::string> output;
+    output.first = cur.first;
+    output.second = output_element;
+    return output;
 }
 
 /* Function: decompressSeq
