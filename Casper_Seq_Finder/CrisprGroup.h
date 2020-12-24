@@ -13,13 +13,9 @@
 #include <fstream>
 #include <vector>
 #include <assert.h>
-#include "hashset.h"
-#include "hashmap.h"
 #include "gRNA.h"
-#include "set.h" //belongs to the StanfordCPPLibrary Copyright (c) Stanford University 2008.
 #include <map>
 #include <unordered_map>
-#include "foreach.h"
 #include "pameval.h"
 #include "Scoring.h"
 #include "RepStor.h"
@@ -70,7 +66,7 @@ public:
     unsigned long Size(int k) {return total_seqs.at(k).size();}
     unsigned long totSize();
     unsigned long repSize() {return repeat_seqs.size();}
-    std::string nextUnique(int, long);
+	std::pair<long, std::string> nextUnique(int, long);
     std::pair<unsigned int, std::vector<gRNA*>> nextRepeatSet(int i) {return repeat_seqs[i];}
 };
 

@@ -14,11 +14,6 @@
 #include "CrisprGroup.h"
 #include "Scoring.h"
 #include "gRNA.h"
-#include "set.h"
-#include "map.h"
-#include "hashset.h"
-#include "hashmap.h"
-#include "foreach.h"
 #include "RepStor.h"
 
 /* Constructor: CrisprGroup
@@ -155,9 +150,9 @@ void CrisprGroup::findPAMs_notRepeats(std::string &s, bool strand, int chrm, std
             addToMap(seed,sequence,false);
         }
         //Reporter for how much of the sequence has been searched.
-        /*if (m_pos%10000 == 0) {
+        if (m_pos%10000 == 0) {
             std::cout << m_pos << " Positions searched." << endl;
-        }*/
+        }
         
     }
 }
@@ -237,7 +232,7 @@ void CrisprGroup::processTargets() {
         std::cout << "sorting " << "scaffold or chromosome: " << i << "..." << std::endl;
         //sort in descending order so that deletion of objects does not result in reindexing of array
         std::sort(total_seqs[i].begin(), total_seqs[i].end(),pairCompare);
-        std::cout << "done sorting." << std::endl;
+        //std::cout << "done sorting." << std::endl;
     }
     Seed_Map.clear();
 }
@@ -268,11 +263,13 @@ unsigned long CrisprGroup::totSize() {
  * will return a compressed (base64) string that contains the location and sequence in that order.
  */
 
-std::string CrisprGroup::nextUnique(int chr, long index) {
+std::pair<long, std::string> CrisprGroup::nextUnique(int chr, long index) {
     std::pair <long, compgrna> cur = total_seqs[chr][index];
-    std::string output_element = std::to_string(cur.first) + ",";
-    output_element += decompressSeq(cur.second.cfive,PAMstat.fivesize) + decompressSeq(cur.second.seed,PAMstat.seedsize) + decompressSeq(cur.second.cthree,PAMstat.threesize) + "," + decompressSeq(cur.second.cpam,PAMstat.pam.size()) + "," + std::to_string(cur.second.score);
-    return output_element;
+	std::string output_element = decompressSeq(cur.second.cfive, PAMstat.fivesize) + decompressSeq(cur.second.seed, PAMstat.seedsize) + decompressSeq(cur.second.cthree, PAMstat.threesize) + "," + decompressSeq(cur.second.cpam, PAMstat.pam.size()) + "," + std::to_string(cur.second.score);
+	std::pair<long, std::string> output;
+	output.first = cur.first;
+	output.second = output_element;
+	return output;
 }
 
 /* Function: decompressSeq

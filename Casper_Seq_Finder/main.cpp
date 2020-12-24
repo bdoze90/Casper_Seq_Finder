@@ -17,7 +17,6 @@
 #include "pameval.h"
 #include "gRNA.h"
 #include "CrisprGroup.h"
-#include "set.h"
 #include "WriteFile.h"
 using namespace std;
 
@@ -34,8 +33,8 @@ string toCapitals(string &str); //takes the string to all capitals
 //int argc, const char * argv[] -> add when exporting executable
 int main() {
     //int argc = 10;
-    std::vector<std::string> argv = {"Executable","spCas9","NGG", "TRUE", "FALSE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Downloads/pde.fna", "Escherichia coli", "notes_go_here"};
-    pamEval P;
+	std::vector<std::string> argv = { "Executable","saCas9","NNGRRT","TRUE","FALSE","4","16","0","sce","C:/Users/Tfry/Desktop/SeqFinder_testing/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/sce.fna", "SCE", "notes_go_here" };
+	pamEval P;
     P.PAMID = argv[1];
     P.pam = argv[2];
     if (string(argv[4]) == "TRUE") {
@@ -94,14 +93,18 @@ int main() {
     //Beginning of the for loop that iterates through the Fasta file to find targets
     std::cout << "Processing the genome for " << P.PAMID << " target sequences.\n";
     Genome->initiateTotalSeqs();
-    for (int j=0; j<inputSequences.size(); j++) {
+    for (int j=0; j<inputSequences.size(); j++) 
+	{
         string chromosomeSequence = toCapitals(inputSequences.at(j));
         inputSequences.at(j).clear();
         inputSequences.at(j).shrink_to_fit();
         karystats.push_back(chromosomeSequence.size());
-        if (repeats) {
-            Genome->findPAMs(chromosomeSequence, true, j, score_file);
-        } else {
+        if (repeats) 
+		{
+			Genome->findPAMs(chromosomeSequence, true, j, score_file);
+        } 
+		else 
+		{
             cout << "Ignoring 'repeats comparison" << endl;
             Genome->findPAMs_notRepeats(chromosomeSequence, true, j, score_file);
         }
@@ -137,7 +140,8 @@ int main() {
     cout << "Time Elapsed: " << duration/60 << " minutes \n";
     delete Genome;
     cout << "Finished Creating File.\n To search return to CASPER homepage and select " << genome_name << " to find targets." << endl;
-    return 0;
+	//system("pause");
+	return 0;
 }
 
 /* Function: toCapitals

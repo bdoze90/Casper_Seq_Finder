@@ -9,6 +9,18 @@
 #include "WriteFile.h"
 using namespace std;
 
+static int callback(void *NotUsed, int argc, char **argv, char **azColName)
+{
+	/*
+	int i;
+	for (i = 0; i < argc; i++) {
+		printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+	}
+	printf("\n");
+	*/
+	return 0;
+}
+
 WriteFile::WriteFile() {
     //chromosomeseqcount = {0,0,0,0,0,0};
 }
@@ -19,7 +31,8 @@ WriteFile::~WriteFile() {
 
 // See the setFileName function for incorporation of this data in the output file
 void WriteFile::inputStats(std::vector<int> kary, std::string misc) {
-    chr_stats_str = "KARYSTATS: ";
+	chromosomeseqcount = kary;
+	chr_stats_str = "KARYSTATS: ";
     for (int i = 0; i<kary.size(); i++) {
         chr_stats_str += to_string(kary[i]) + ",";
     }
@@ -28,44 +41,155 @@ void WriteFile::inputStats(std::vector<int> kary, std::string misc) {
 }
 
 void WriteFile::setFileName(string fn, string genome_name) {
-    filename = fn;
-    outputfile.open(filename);
-    outputfile << "GENOME: " << genome_name << "\n";
-    outputfile << chr_stats_str << "\n";
-    outputfile << mystats << "\n";
+	filename = fn;
+	outputfile.open(filename, ios_base::out | ios_base::binary);
+
+	//ofstream outputfile("test.cspr", ios_base::out | ios_base::binary);
+	boost::iostreams::filtering_streambuf<boost::iostreams::output> outbuf;
+	outbuf.push(boost::iostreams::gzip_compressor());
+	outbuf.push(outputfile);
+	//Convert streambuf to ostream
+	ostream out(&outbuf);
+
+	out << "GENOME: " << genome_name << "\n";
+	out << chr_stats_str << "\n";
+	out << mystats << "\n";
 }
 
-void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bool repeats) {
-    //retrieving the unique sequences
-    std::string current;
-    for (int i=0;i<genome->chrCount();i++) {
-        outputfile << cs[i] << " (" << i+1 << ")" << "\n";
-        // Loop counter is in the correct direction (positive to file).
-        for (int j=0; j<genome->Size(i); j++) {
-            current = genome->nextUnique(i,j);
-            outputfile << current << "\n";
-        }
-    }
-    outputfile << "END_OF_FILE";
-    //retrieving the repeated sequences if selected
-    if (repeats) {
-        //Get the pam evaluation information
-        PAMstat = genome->getPamEval();
-        repeatfile.open(filename + "_repeats");
-        repeatfile << "REPEATS" << "\n";
-        std::pair<unsigned int, std::vector<gRNA*>> newSet;
-        for (int j=0;j<genome->repSize();j++) {
-            newSet = genome->nextRepeatSet(j);
-            string seed = decompressSeq(newSet.first,PAMstat.seedsize);
-            repeatfile << seed << "\n";
-            for (int i=0; i<newSet.second.size(); i++) {
-                inputRepeatData(newSet.second.at(i));
-                repeatfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
-                delete newSet.second.at(i);
-            }
-            repeatfile << "\n";
-        }
-    }
+void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, bool repeats) {
+	//retrieving the unique sequences
+	boost::iostreams::filtering_streambuf<boost::iostreams::output> outbuf;
+	outbuf.push(boost::iostreams::gzip_compressor());
+	outbuf.push(outputfile);
+	//Convert streambuf to ostream
+	ostream out(&outbuf);
+	std::pair<long, string> current;
+	for (int i = 0; i < genome->chrCount(); i++) {
+		out << cs[i] << " (" << i + 1 << ")" << "\n";
+		// Loop counter is in the correct direction (positive to file).
+		for (int j = 0; j < genome->Size(i); j++) {
+			current = genome->nextUnique(i, j);
+			if (current.first < 0) {
+				long outnum = (chromosomeseqcount[i] + current.first)*-1;
+				outputfile << outnum << ",";
+			}
+			else {
+				outputfile << current.first << ",";
+			}
+			outputfile << current.second << "\n";
+		}
+	}
+	boost::iostreams::close(outbuf);
+	//retrieving the repeated sequences if selected
+
+	if (repeats) {
+		//setup db file
+		sqlite3 *db;
+		char *zErrMsg = 0;
+		int rc;
+		string sql;
+		filename.erase(filename.find("."), 5);
+		filename = filename + "_repeats.db";
+		rc = sqlite3_open(filename.c_str(), &db);
+
+		sql = "DROP TABLE IF EXISTS repeats";
+		rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
+
+		sql = "CREATE TABLE repeats (seed TEXT, chromosome TEXT, location TEXT, three TEXT, five TEXT, pam TEXT, score TEXT, count int);";
+		rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
+
+
+		//Get the pam evaluation information
+		PAMstat = genome->getPamEval();
+
+		std::pair<unsigned int, std::vector<gRNA*>> newSet;
+		for (int j = 0; j < genome->repSize(); j++) {
+			newSet = genome->nextRepeatSet(j);
+			int size = newSet.second.size();
+			string seed = decompressSeq(newSet.first, PAMstat.seedsize);
+			string chroms = "";
+			string locs = "";
+			string scores = "";
+			string threes = "";
+			string fives = "";
+			string pams = "";
+			string three = "";
+			string five = "";
+			string pam = "";
+
+			for (int i = 0; i < newSet.second.size(); i++)
+			{
+				chromosome = newSet.second.at(i)->chrNumber();
+				score = to_string(newSet.second.at(i)->getScore());
+				position = to_string(newSet.second.at(i)->getLocation());
+				three = decompressSeq(newSet.second.at(i)->getThreeSeq(), PAMstat.threesize);
+				five = decompressSeq(newSet.second.at(i)->getFiveSeq(), PAMstat.fivesize);
+				pam = decompressSeq(newSet.second.at(i)->getPam(), PAMstat.pam.size());
+				long newposition = stol(position);
+				if (newposition < 0) {
+					newposition = (chromosomeseqcount[j] + newposition)*-1;
+				}
+				position = to_string(newposition);
+				//inputRepeatData(newSet.second.at(i));
+				//repeatfile << chromosome << "," << position << "," << sequence << "," << score << "\t";
+				if (i != size - 1)
+				{
+					chroms += to_string(chromosome) + ",";
+					locs += position + ",";
+					if (three != "")
+					{
+						threes += three + ",";
+					}
+					if (five != "")
+					{
+						fives += five + ",";
+					}
+					if (pam != "")
+					{
+						pams += pam + ",";
+					}
+					scores += score + ",";
+
+				}
+				else
+				{
+					chroms += to_string(chromosome);
+					locs += position;
+					if (three != "")
+					{
+						threes += three;
+					}
+					if (five != "")
+					{
+						fives += five;
+					}
+					if (pam != "")
+					{
+						pams += pam;
+					}
+					scores += score;
+				}
+				delete newSet.second.at(i);
+			}
+
+
+
+			sql = "INSERT INTO repeats ('seed', 'chromosome', 'location', 'three', 'five', 'pam', 'score', 'count') VALUES (";
+			sql += "'" + seed + "'" + ",";
+			sql += "'" + chroms + "'" + ",";
+			sql += "'" + locs + "'" + ",";
+			sql += "'" + threes + "'" + ",";
+			sql += "'" + fives + "'" + ",";
+			sql += "'" + pams + "'" + ",";
+			sql += "'" + scores + "'" + ",";
+			sql += "'" + to_string(size) + "'";
+			sql += ");";
+			rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
+
+		}
+		sqlite3_close(db);
+	}
+
 }
 
 void WriteFile::inputRepeatData(gRNA* g) {
