@@ -71,12 +71,12 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 			current = genome->nextUnique(i, j);
 			if (current.first < 0) {
 				long outnum = (chromosomeseqcount[i] + current.first)*-1;
-				outputfile << outnum << ",";
+				out << outnum << ",";
 			}
 			else {
-				outputfile << current.first << ",";
+				out << current.first << ",";
 			}
-			outputfile << current.second << "\n";
+			out << current.second << "\n";
 		}
 	}
 	boost::iostreams::close(outbuf);
@@ -103,7 +103,8 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 		PAMstat = genome->getPamEval();
 
 		std::pair<unsigned int, std::vector<gRNA*>> newSet;
-		for (int j = 0; j < genome->repSize(); j++) {
+		for (int j = 0; j < genome->repSize(); j++) 
+		{
 			newSet = genome->nextRepeatSet(j);
 			int size = newSet.second.size();
 			string seed = decompressSeq(newSet.first, PAMstat.seedsize);
@@ -126,7 +127,8 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 				five = decompressSeq(newSet.second.at(i)->getFiveSeq(), PAMstat.fivesize);
 				pam = decompressSeq(newSet.second.at(i)->getPam(), PAMstat.pam.size());
 				long newposition = stol(position);
-				if (newposition < 0) {
+				if (newposition < 0) 
+				{
 					newposition = (chromosomeseqcount[j] + newposition)*-1;
 				}
 				position = to_string(newposition);
