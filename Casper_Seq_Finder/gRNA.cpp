@@ -44,15 +44,15 @@ gRNA::~gRNA() {
  * that it can be stored in the Seed_Map of CrisprGroup for comparison to discover repeats.
  */
 
-unsigned long long gRNA::insertSequence(long index, int chr, int pamsize, bool strand, std::string seq, int score, short five, short seedsize, short three) {
+unsigned long long gRNA::insertSequence(long index, int chr, int pamsize, bool sensestrand, std::string seq, int score, short five, short seedsize, short three) {
     PAMlocation = index;
-    if (!strand) {
+    if (!sensestrand) {
         PAMlocation *= -1;
     }
     OnScore = score;
     Chromosome = chr+1; // this added 1 takes care of the indexing error and properly assigns chromosome number.
     /* The following code process the total sequence into multiple elements including the five prime and three prime sequences as well as the pam sequences. */
-    if (!Anti) {
+    if (!sensestrand) {
         pamSeq = compressSeq(seq.substr(five+seedsize+three,pamsize));
         threeSeq = compressSeq(seq.substr(five+seedsize,three));
         fiveSeq = compressSeq(seq.substr(0,five));

@@ -38,7 +38,6 @@ private:
     unsigned short pamSeq; // capable of storing an 8 nucleotide PAM sequence
     long PAMlocation;
     unsigned short Chromosome;
-    bool Anti;
     short OnScore;
     
 };

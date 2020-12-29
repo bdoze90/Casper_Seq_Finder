@@ -35,6 +35,8 @@ string toCapitals(string &str); //takes the string to all capitals
 int main() {
     //int argc = 10;
     std::vector<std::string> argv = {"Executable","saCas9","NNGRRT", "TRUE", "FALSE", "4","16","0","testfile","/Users/brianmendoza/Desktop/","/Users/brianmendoza/Dropbox/CASPER/CASPERinfo","/Users/brianmendoza/Downloads/sceR64.fna", "Saccharomyces cerevisae", "notes_go_here"};
+    //use this for debugging if there needs to be more space given to things
+    //cout << sizeof(short) << "," << sizeof(int) << "," << sizeof(long long) << "\n";
     pamEval P;
     P.PAMID = argv[1];
     P.pam = argv[2];
@@ -119,9 +121,7 @@ int main() {
         reverseSequence.shrink_to_fit();
         cout << "Chromosome/Scaffold " << j+1 << " complete." << endl;
     }
-    if (repeats) {
-        Genome->processTargets();
-    }
+    Genome->processTargets(karystats);
     //std::remove(argv[8].c_str());
     cout << "Deleted temporary file" << endl;
     cout << "Finished Locating All Cas9 target sequences" << endl;

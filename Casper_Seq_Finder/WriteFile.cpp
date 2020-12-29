@@ -44,13 +44,7 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bo
         // Loop counter is in the correct direction (positive to file).
         for (int j=0; j<genome->Size(i); j++) {
             current = genome->nextUnique(i,j);
-            if (current.first < 0) {
-                long outnum = (chromosomeseqcount[i] + current.first)*-1;
-                outputfile << outnum << ",";
-            } else {
-                outputfile << current.first << ",";
-            }
-            outputfile << current.second << "\n";
+                outputfile << current.first << "," << current.second << "\n";
         }
     }
     outputfile << "END_OF_FILE";
@@ -67,9 +61,10 @@ void WriteFile::retrieveData(CrisprGroup* genome,std::vector<std::string> cs, bo
             repeatfile << seed << "\n";
             for (int i=0; i<newSet.second.size(); i++) {
                 inputRepeatData(newSet.second.at(i));
+                //This section is where the repeats are processed for their proper location. Since they are unsorted it can happen here, right before they enter the output file.
                 long newposition = stol(position);
                 if (newposition < 0) {
-                    newposition = (chromosomeseqcount[j] + newposition)*-1;
+                    newposition = (chromosomeseqcount[chromosome - 1] + newposition)*-1;
                 }
                 repeatfile << chromosome << "," << newposition << "," << sequence << "," << score << "\t";
                 delete newSet.second.at(i);
