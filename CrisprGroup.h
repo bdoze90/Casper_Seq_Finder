@@ -29,7 +29,7 @@ public:
     void findPAMs_notRepeats(std::string &s, bool, int, std::string scr);
     void printSequences();
     void initiateTotalSeqs();
-    void processTargets();  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
+	void processTargets(std::vector<int>);  //CAN ONLY BE CALLED ONCE AND AT THE END OF THE SEARCH PROCESS!!!
 private:
     std::string filename;
 private:
@@ -47,9 +47,11 @@ private:
         unsigned int cthree;
         short cpam;
         short score;
+		bool strand = true;
     };
+
 private:  // Functions for manipulating the output of the gRNA objects
-    static bool pairCompare(const std::pair<unsigned long, compgrna>, const std::pair<unsigned long, compgrna>);
+	static bool pairCompare(const std::pair<long, compgrna>, const std::pair<long, compgrna>);
     std::string decompressSeq(unsigned long, short);
     char convertBase4toChar(int);
     std::string baseConvert(unsigned long long, int);

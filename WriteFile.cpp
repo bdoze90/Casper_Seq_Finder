@@ -64,21 +64,17 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 	//Convert streambuf to ostream
 	ostream out(&outbuf);
 	std::pair<long, string> current;
-	for (int i = 0; i < genome->chrCount(); i++) {
+	for (int i = 0; i < genome->chrCount(); i++) 
+	{
 		out << cs[i] << " (" << i + 1 << ")" << "\n";
 		// Loop counter is in the correct direction (positive to file).
-		for (int j = 0; j < genome->Size(i); j++) {
+		for (int j = 0; j < genome->Size(i); j++) 
+		{
 			current = genome->nextUnique(i, j);
-			if (current.first < 0) {
-				long outnum = (chromosomeseqcount[i] + current.first)*-1;
-				out << outnum << ",";
-			}
-			else {
-				out << current.first << ",";
-			}
-			out << current.second << "\n";
+			out << current.first << "," << current.second << "\n";
 		}
 	}
+
 	boost::iostreams::close(outbuf);
 	//retrieving the repeated sequences if selected
 
@@ -129,7 +125,7 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 				long newposition = stol(position);
 				if (newposition < 0) 
 				{
-					newposition = (chromosomeseqcount[j] + newposition)*-1;
+					newposition = (chromosomeseqcount[chromosome - 1] + newposition)*-1;
 				}
 				position = to_string(newposition);
 				//inputRepeatData(newSet.second.at(i));

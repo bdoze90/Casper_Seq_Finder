@@ -207,7 +207,7 @@ int CrisprGroup::charToInt(char c) {
  * not analyzed.
  */
 
-void CrisprGroup::processTargets() {
+void CrisprGroup::processTargets(std::vector<int> kary) {
     //Iterating across the Seed_Map:
     for (const auto &i : Seed_Map) {
         if (i.second.size() != 1) { //If the sequence is non-unique
@@ -216,13 +216,18 @@ void CrisprGroup::processTargets() {
             repeat_seqs.push_back(insert);
         } else { //If the sequence is unique
             gRNA* myTarget = i.second.at(0);
+			long revised_location = myTarget->getLocation();
             compgrna mystruct;
             mystruct.cfive = myTarget->getFiveSeq();
             mystruct.cthree = myTarget->getThreeSeq();
             mystruct.cpam = myTarget->getPam();
             mystruct.score = myTarget-> getScore();
             mystruct.seed = i.first;
-            std::pair<unsigned long, compgrna> insert = std::make_pair(myTarget->getLocation(),mystruct);
+			if (revised_location < 0) {
+				revised_location = kary[myTarget->chrNumber() - 1] + revised_location;
+				mystruct.strand = false;
+			}
+			std::pair<long, compgrna> insert = std::make_pair(revised_location, mystruct);
             //string will contain whether the location is on the sense or antisense strand
             total_seqs[myTarget->chrNumber()-1].push_back(insert);
             delete myTarget;
@@ -237,7 +242,7 @@ void CrisprGroup::processTargets() {
     Seed_Map.clear();
 }
 
-bool CrisprGroup::pairCompare(const std::pair<unsigned long, compgrna> i, const std::pair<unsigned long, compgrna> j) {
+bool CrisprGroup::pairCompare(const std::pair<long, compgrna> i, const std::pair<long, compgrna> j) {
     return i.first < j.first;
 }
 
@@ -268,6 +273,9 @@ std::pair<long, std::string> CrisprGroup::nextUnique(int chr, long index) {
 	std::string output_element = decompressSeq(cur.second.cfive, PAMstat.fivesize) + decompressSeq(cur.second.seed, PAMstat.seedsize) + decompressSeq(cur.second.cthree, PAMstat.threesize) + "," + decompressSeq(cur.second.cpam, PAMstat.pam.size()) + "," + std::to_string(cur.second.score);
 	std::pair<long, std::string> output;
 	output.first = cur.first;
+	if (!cur.second.strand) {
+		output.first *= -1;
+	}
 	output.second = output_element;
 	return output;
 }

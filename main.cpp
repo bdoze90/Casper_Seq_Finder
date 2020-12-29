@@ -31,9 +31,11 @@ string toCapitals(string &str); //takes the string to all capitals
 
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
-int main() {
+int main(int argc, char *argv[]) {
     //int argc = 10;
-	std::vector<std::string> argv = { "Executable","saCas9","NNGRRT","TRUE","FALSE","4","16","0","sce","C:/Users/Tfry/Desktop/SeqFinder_testing/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/sce.fna", "SCE", "notes_go_here" };
+	//std::vector<std::string> argv = { "Executable","saCas9","NNGRRT","TRUE","FALSE","4","16","0","baccoa","C:/Users/Tfry/Desktop/SeqFinder_testing/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/bacillus_coagulans.fna", "Bacillus Coagulans", "notes_go_here" };
+	//std::vector<std::string> argv = { "Executable","spCas9","NGG","TRUE","FALSE","4","16","0","baccoa","C:/Users/Tfry/Desktop/SeqFinder_testing/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/bacillus_coagulans.fna", "Bacillus Coagulans", "notes_go_here" };
+
 	pamEval P;
     P.PAMID = argv[1];
     P.pam = argv[2];
@@ -122,9 +124,9 @@ int main() {
         reverseSequence.shrink_to_fit();
         cout << "Chromosome/Scaffold " << j+1 << " complete." << endl;
     }
-    if (repeats) {
-        Genome->processTargets();
-    }
+
+	Genome->processTargets(karystats);
+    
     //std::remove(argv[8].c_str());
     cout << "Deleted temporary file" << endl;
     cout << "Finished Locating All Cas9 target sequences" << endl;
