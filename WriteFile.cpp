@@ -94,6 +94,7 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 		sql = "CREATE TABLE repeats (seed TEXT, chromosome TEXT, location TEXT, three TEXT, five TEXT, pam TEXT, score TEXT, count int);";
 		rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
 
+		rc = sqlite3_exec(db, "BEGIN TRANSACTION;", callback, 0, &zErrMsg);
 
 		//Get the pam evaluation information
 		PAMstat = genome->getPamEval();
@@ -185,6 +186,9 @@ void WriteFile::retrieveData(CrisprGroup* genome, std::vector<std::string> cs, b
 			rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
 
 		}
+
+		rc = sqlite3_exec(db, "END TRANSACTION;", callback, 0, &zErrMsg);
+
 		sqlite3_close(db);
 	}
 

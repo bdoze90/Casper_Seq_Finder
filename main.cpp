@@ -31,9 +31,9 @@ string toCapitals(string &str); //takes the string to all capitals
 
 //the line limit for the file and the capitals mixed
 //int argc, const char * argv[] -> add when exporting executable
-int main(int argc, char *argv[]) {
+int main(int argc, const char * argv[]) {
     //int argc = 10;
-	//std::vector<std::string> argv = { "Executable","saCas9","NNGRRT","TRUE","FALSE","4","16","0","baccoa","C:/Users/Tfry/Desktop/SeqFinder_testing/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/bacillus_coagulans.fna", "Bacillus Coagulans", "notes_go_here" };
+	//std::vector<std::string> argv = { "Executable","spCas9","NGG","TRUE","FALSE","4","16","0","gal","C:/Users/Tfry/Desktop/Recommended_CSPR_Files/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/Recommended_CSPR_Files/FNA Files/gallus_gallus.fna", "gallus gallus", "notes_go_here" };
 	//std::vector<std::string> argv = { "Executable","spCas9","NGG","TRUE","FALSE","4","16","0","baccoa","C:/Users/Tfry/Desktop/SeqFinder_testing/","C:/Users/Tfry/Desktop/CASPERinfo","C:/Users/Tfry/Desktop/bacillus_coagulans.fna", "Bacillus Coagulans", "notes_go_here" };
 
 	pamEval P;
