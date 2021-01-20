@@ -21,7 +21,7 @@ public:
     ~gRNA();
     
 public:
-    unsigned long long insertSequence(long, int, int, bool, std::string, int, short, short, short);  //returns the seed sequence to the map after processing
+    unsigned long long insertSequence(long, int, int, bool, bool, std::string, int, short, short, short);  //returns the seed sequence to the map after processing
     long getLocation() {return PAMlocation;} // the negative refers to the strand direction +/-: sense/anti-sense
     unsigned int getFiveSeq() {return fiveSeq;}
     unsigned int getThreeSeq() {return threeSeq;}

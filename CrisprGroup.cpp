@@ -93,7 +93,7 @@ void CrisprGroup::findPAMs (std::string &s, bool strand, int chrm, std::string s
             } else {
                 fullseq = s.substr(m_pos-fulllen,fulllen+pamsize);
             }
-            seed = sequence->insertSequence(j,chrm,pamsize,strand,fullseq,scoring.calcScore(fullseq),PAMstat.fivesize,PAMstat.seedsize,PAMstat.threesize);
+            seed = sequence->insertSequence(j,chrm,pamsize,strand,PAMstat.directionality,fullseq,scoring.calcScore(fullseq),PAMstat.fivesize,PAMstat.seedsize,PAMstat.threesize);
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
             addToMap(seed,sequence,true);
         }
@@ -144,7 +144,7 @@ void CrisprGroup::findPAMs_notRepeats(std::string &s, bool strand, int chrm, std
             } else {
                 fullseq = s.substr(m_pos-fulllen,fulllen+pamsize);
             }
-            seed = sequence->insertSequence(j,chrm,pamsize,strand,fullseq,scoring.calcScore(fullseq),pe.fivesize,pe.seedsize,pe.threesize);
+            seed = sequence->insertSequence(j,chrm,pamsize,strand,PAMstat.directionality,fullseq,scoring.calcScore(fullseq),pe.fivesize,pe.seedsize,pe.threesize);
             //std::cout << fullseq << "," << j << std::endl; //For double checking the sequence and location
             // Transfer objects straight to the output vector to avoid sorting:
             addToMap(seed,sequence,false);
@@ -290,18 +290,22 @@ std::pair<long, std::string> CrisprGroup::nextUnique(int chr, long index) {
  */
 
 std::string CrisprGroup::decompressSeq(unsigned long cseq, short exp_len) {
-    std::string uncompressed;
-    //do the reverse binary transition from base-10 to base-4
-    while (cseq >= 4) {
-        int rem = cseq%4;
-        cseq = cseq/4;
-        uncompressed += convertBase4toChar(rem);
-    }
-    uncompressed += convertBase4toChar(cseq);
-    for (int i=uncompressed.size(); i<exp_len; i++) {
-        uncompressed += 'A';
-    }
-    return uncompressed;
+	// Goes through if statement because of an off by 1 error on a zero length sequence
+	if (exp_len > 0) {
+		std::string uncompressed;
+		//do the reverse binary transition from base-10 to base-4
+		while (cseq >= 4) {
+			int rem = cseq % 4;
+			cseq = cseq / 4;
+			uncompressed += convertBase4toChar(rem);
+		}
+		uncompressed += convertBase4toChar(cseq);
+		for (int i = uncompressed.size(); i < exp_len; i++) {
+			uncompressed += 'A';
+		}
+		return uncompressed;
+	}
+	return "";
 }
 
 
